@@ -21,12 +21,10 @@ dependencies:
 
 ## 使用示例
 ```dart
-    # 引入 fijkplayer_skin
+    
     import 'package:fijkplayer_skin/fijkplayer_skin.dart';
-    # 引入 fijkplayer
     import 'package:fijkplayer/fijkplayer.dart';
-
-
+    
     class VideoScreen extends StatefulWidget {
       final String url;
 
@@ -53,7 +51,7 @@ dependencies:
             appBar: AppBar(title: Text("Fijkplayer Example")),
             body: Container(
               alignment: Alignment.center,
-              # 这里 FijkView 开始为自定义 UI 部分
+              // 这里 FijkView 开始为自定义 UI 部分
               child: FijkView(
                 height: 240,
                 color: Colors.black,
@@ -69,12 +67,14 @@ dependencies:
                  /// 使用自定义的布局
                  return CustomFijkPanel(
                    player: player,
-                   # 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
-                   # 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
+                   // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
+                   // 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
                    buildContext: context,
                    viewSize: viewSize,
                    texturePos: texturePos,
-                   # 标题 当前页面顶部的标题部分
+                   // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
+                   showTopCon: true,
+                   // 标题 当前页面顶部的标题部分
                    playerTitle: "标题",
                  );
               },

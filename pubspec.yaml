@@ -9,11 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fijkplayer: ^0.8.7
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fijkplayer: ^0.8.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fijkplayer/fijkplayer.dart';
+import './slider.dart' show NewFijkSliderColors, NewFijkSlider;
 
 String _duration2String(Duration duration) {
   if (duration.inMilliseconds < 0) return "-: negtive";
@@ -26,6 +27,7 @@ class CustomFijkPanel extends StatefulWidget {
   final Rect texturePos;
   final BuildContext pageContent;
   final String playerTitle;
+  final bool showTopCon;
 
   CustomFijkPanel({
     @required this.player,
@@ -34,6 +36,7 @@ class CustomFijkPanel extends StatefulWidget {
     this.texturePos,
     this.pageContent,
     this.playerTitle,
+    this.showTopCon,
   });
 
   @override
@@ -42,6 +45,7 @@ class CustomFijkPanel extends StatefulWidget {
 
 class _CustomFijkPanelState extends State<CustomFijkPanel> {
   FijkPlayer get player => widget.player;
+  bool get isShowBox => widget.showTopCon;
 
   Duration _duration = Duration();
   Duration _currentPos = Duration();
@@ -260,8 +264,8 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                 : Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(right: 5, left: 5),
-                      child: FijkSlider(
-                        colors: FijkSliderColors(
+                      child: NewFijkSlider(
+                        colors: NewFijkSliderColors(
                           cursorColor: Theme.of(context).accentColor,
                           playedColor: Theme.of(context).accentColor,
                         ),
@@ -365,7 +369,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
               child: Container(
                 child: widget.playerTitle != null
                     ? Text(
-                        widget.playerTitle,
+                        widget.playerTitle != null ? widget.playerTitle : '',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         textAlign: TextAlign.left,
@@ -448,7 +452,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
             child: Column(
               children: <Widget>[
                 // 播放器顶部控制器
-                _buildTopBar(),
+                isShowBox != null ? _buildTopBar() : Container(),
                 // 中间按钮
                 Expanded(
                   child: GestureDetector(
