@@ -1,9 +1,16 @@
 
 # fijkplayer_skin
 [![pub package](https://img.shields.io/pub/v/fijkplayer_skin.svg)](https://pub.dev/packages/fijkplayer_skin)
-
 这是一款 fijkplayer 播放器的普通皮肤，主要解决 fijkplayer 自带的皮肤不好看，没有手势拖动快进，快退
 fijkplayer_skin只是一款皮肤，并不是播放器，所以 fijkplayer 存在的问题，这里 fijkplayer_skin 一样存在
+
+## 其他开源项目
+
+* [Dart-Cms](https://github.com/abcd498936590/Dart-Cms)  =>> Dart-Cms完整项目
+* [Dart-Cms-Manage](https://github.com/abcd498936590/Dart-Cms-Manage)   =>> Dart-Cms后台管理系统页面部分
+* [Dart-Cms-Flutter](https://github.com/abcd498936590/Dart-Cms-Flutter)  =>> Dart-Cms的安卓客户端，使用flutter开发
+* [Dart-CMS-Script](https://github.com/abcd498936590/Dart-Cms-Script)  =>> Dart-Cms插件教程，插件使用，插件开发
+
 
 ## 使用说明
 
@@ -11,14 +18,6 @@ fijkplayer_skin只是一款皮肤，并不是播放器，所以 fijkplayer 存�
 
 ## 预览
 <img style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer_skin-1.png" />
-
-## Dart-Cms（web电影系统）
-
-[nodejs + mongodb 开发一套电影管理系统](https://github.com/abcd498936590/Dart-Cms)
-
-## Dart-Cms-Flutter（安卓）
-
-[安卓APP使用google flutter技术开发](https://github.com/abcd498936590/Dart-Cms-Flutter)
 
 
 ## 安装
