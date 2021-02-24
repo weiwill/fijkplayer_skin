@@ -27,6 +27,12 @@ pubspec.yaml
 dependencies:
   fijkplayer_skin: ${lastes_version}
 ```
+或者
+```yaml
+fijkplayer_skin:
+  git:
+    url: git@github.com:abcd498936590/fijkplayer_skin.git
+```
 
 ## 使用示例
 ```dart
