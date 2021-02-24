@@ -337,7 +337,8 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            begin: Alignment.topRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomLeft,
             colors: [
               Color.fromRGBO(0, 0, 0, 0.7),
               Color.fromRGBO(0, 0, 0, 0),
