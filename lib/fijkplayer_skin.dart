@@ -1,8 +1,16 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
 import 'package:fijkplayer/fijkplayer.dart';
+import 'package:flutter/material.dart';
+
+import './schema.dart' show VideoSourceFormat;
 import './slider.dart' show NewFijkSliderColors, NewFijkSlider;
+
+double speed = 1.0;
+bool lockStuff = false;
+bool hideLockStuff = false;
 
 String _duration2String(Duration duration) {
   if (duration.inMilliseconds < 0) return "-: negtive";
@@ -25,31 +33,44 @@ class CustomFijkPanel extends StatefulWidget {
   final BuildContext buildContext;
   final Size viewSize;
   final Rect texturePos;
-  final BuildContext pageContent;
+  final BuildContext? pageContent;
   final String playerTitle;
   final bool showTopCon;
+  final Function? onChangeVideo;
+  final int curTabIdx;
+  final int curActiveIdx;
+  final Map<String, List<Map<String, dynamic>>> videoList;
 
   CustomFijkPanel({
-    @required this.player,
-    this.buildContext,
-    this.viewSize,
-    this.texturePos,
+    required this.player,
+    required this.buildContext,
+    required this.viewSize,
+    required this.texturePos,
     this.pageContent,
-    this.playerTitle,
-    this.showTopCon,
+    this.playerTitle = "",
+    required this.showTopCon,
+    this.onChangeVideo,
+    required this.videoList,
+    required this.curTabIdx,
+    required this.curActiveIdx,
   });
 
   @override
   _CustomFijkPanelState createState() => _CustomFijkPanelState();
 }
 
-class _CustomFijkPanelState extends State<CustomFijkPanel> {
+class _CustomFijkPanelState extends State<CustomFijkPanel>
+    with TickerProviderStateMixin {
   FijkPlayer get player => widget.player;
   bool get isShowBox => widget.showTopCon;
+  Map<String, List<Map<String, dynamic>>> get videoList => widget.videoList;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   Duration _duration = Duration();
   Duration _currentPos = Duration();
   Duration _bufferPos = Duration();
+
   // 滑动后值
   Duration _dargPos = Duration();
 
@@ -57,32 +78,78 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
 
   bool _playing = false;
   bool _prepared = false;
-  String _exception;
+  String? _exception;
 
-  num startPosX = null;
-  num startPosY = null;
-  Size playerBoxSize;
+  double? updatePrevDx;
+  double? updatePrevDy;
+  int? updatePosX;
 
-  // bool _buffering = false;
+  bool? isDargVerLeft;
+
+  double? updateDargVarVal;
+
+  bool varTouchInitSuc = false;
+
+  bool _buffering = false;
 
   double _seekPos = -1.0;
 
-  StreamSubscription _currentPosSubs;
+  StreamSubscription? _currentPosSubs;
+  StreamSubscription? _bufferPosSubs;
+  StreamSubscription? _bufferingSubs;
 
-  StreamSubscription _bufferPosSubs;
-  //StreamSubscription _bufferingSubs;
-
-  Timer _hideTimer;
+  Timer? _hideTimer;
+  Timer? _hideLockTimer;
   bool _hideStuff = true;
-  bool _lockStuff = true;
-
-  double _volume = 1.0;
+  bool _lockStuff = lockStuff;
+  bool _hideLockStuff = hideLockStuff;
+  bool _hideSpeedStu = true;
 
   final barHeight = 50.0;
+
+  double _speed = speed;
+
+  late TabController _tabController;
+
+  Map<String, double> speedList = {
+    "2.0": 2.0,
+    "1.8": 1.8,
+    "1.5": 1.5,
+    "1.2": 1.2,
+    "1.0": 1.0,
+  };
+
+  VideoSourceFormat? _videoSourceTabs;
+
+  void initEvent() {
+    // 设置初始化的值，全屏与半屏切换后，重设
+    setState(() {
+      _speed = speed;
+    });
+    // formant json
+    _videoSourceTabs = VideoSourceFormat.fromJson(videoList);
+    // is not null
+    if (_videoSourceTabs!.video!.length < 1) return null;
+    setState(() {
+      _tabController = TabController(
+        length: _videoSourceTabs!.video!.length,
+        vsync: this,
+      );
+    });
+    // url
+    String url = _videoSourceTabs!
+        .video![widget.curTabIdx]!.list![widget.curActiveIdx]!.url!;
+    player.setDataSource(
+      url,
+      autoPlay: true,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
+
+    initEvent();
 
     _duration = player.value.duration;
     _currentPos = player.currentPos;
@@ -90,7 +157,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
     _prepared = player.state.index >= FijkState.prepared.index;
     _playing = player.state == FijkState.started;
     _exception = player.value.exception.message;
-    // _buffering = player.isBuffering;
+    _buffering = player.isBuffering;
 
     player.addListener(_playerValueChanged);
 
@@ -105,51 +172,150 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
         _bufferPos = v;
       });
     });
+
+    _bufferingSubs = player.onBufferStateUpdate.listen((v) {
+      setState(() {
+        _buffering = v;
+      });
+    });
   }
 
 // +++++++++++++++++++++++++++++++++++++++++++
 
   _onHorizontalDragStart(detills) {
-    startPosX = detills.globalPosition.dx;
+    setState(() {
+      updatePrevDx = detills.globalPosition.dx;
+      updatePosX = _currentPos.inSeconds;
+    });
   }
 
   _onHorizontalDragUpdate(detills) {
-    _isTouch = true;
-    num curXpost = detills.globalPosition.dx;
-    //
-    if (curXpost < 0) {
-      return null;
+    double curDragDx = detills.globalPosition.dx;
+    // 确定当前是前进或者后退
+    int cdx = curDragDx.toInt();
+    int pdx = updatePrevDx!.toInt();
+    bool isBefore = cdx > pdx;
+    // + -, 不满足, 左右滑动合法滑动值，> 4
+    if (isBefore && cdx - pdx < 3 || !isBefore && pdx - cdx < 3) return null;
+
+    int dragRange = isBefore ? updatePosX! + 1 : updatePosX! - 1;
+
+    // 是否溢出 最大
+    int lastSecond = _duration.inSeconds;
+    if (dragRange >= _duration.inSeconds) {
+      dragRange = lastSecond;
     }
-    //
-    double dragRange = (curXpost - startPosX) + _currentPos.inSeconds;
-    if (dragRange < 0) {
+    // 是否溢出 最小
+    if (dragRange <= 0) {
       dragRange = 0;
     }
-    int lastSecond = _duration.inSeconds;
-    if (dragRange > lastSecond) {
-      dragRange = lastSecond.toDouble();
-    }
-    _dargPos = Duration(seconds: dragRange.toInt());
+    //
+    this.setState(() {
+      _hideStuff = false;
+      _isTouch = true;
+      // 更新下上一次存的滑动位置
+      updatePrevDx = curDragDx;
+      // 更新时间
+      updatePosX = dragRange.toInt();
+      _dargPos = Duration(seconds: updatePosX!.toInt());
+    });
   }
 
   _onHorizontalDragEnd(detills) {
     player.seekTo(_dargPos.inMilliseconds);
-    _isTouch = false;
+    this.setState(() {
+      _isTouch = false;
+      _hideStuff = true;
+      _currentPos = _dargPos;
+    });
   }
 
 // +++++++++++++++++++++++++++++++++++++++++++
 
-  void _playerValueChanged() {
+  _onVerticalDragStart(detills) async {
+    double clientW = widget.viewSize.width;
+    double curTouchPosX = detills.globalPosition.dx;
+
+    setState(() {
+      // 更新位置
+      updatePrevDy = detills.globalPosition.dy;
+      // 是否左边
+      isDargVerLeft = (curTouchPosX > (clientW / 2)) ? false : true;
+    });
+    // 大于 右边 音量 ， 小于 左边 亮度
+    if (!isDargVerLeft!) {
+      // 音量
+      await FijkVolume.getVol().then((double v) {
+        varTouchInitSuc = true;
+        setState(() {
+          updateDargVarVal = v;
+        });
+      });
+    } else {
+      // 亮度
+      await FijkPlugin.screenBrightness().then((double v) {
+        varTouchInitSuc = true;
+        setState(() {
+          updateDargVarVal = v;
+        });
+      });
+    }
+  }
+
+  _onVerticalDragUpdate(detills) {
+    if (!varTouchInitSuc) return null;
+    double curDragDy = detills.globalPosition.dy;
+    // 确定当前是前进或者后退
+    int cdy = curDragDy.toInt();
+    int pdy = updatePrevDy!.toInt();
+    bool isBefore = cdy < pdy;
+    // + -, 不满足, 上下滑动合法滑动值，> 3
+    if (isBefore && pdy - cdy < 10 || !isBefore && cdy - pdy < 10) return null;
+    // 区间
+    double dragRange =
+        isBefore ? updateDargVarVal! + 0.1 : updateDargVarVal! - 0.1;
+    // 是否溢出
+    if (dragRange > 1) {
+      dragRange = 1.0;
+    }
+    if (dragRange < 0) {
+      dragRange = 0.0;
+    }
+    setState(() {
+      updatePrevDy = curDragDy;
+      varTouchInitSuc = true;
+      updateDargVarVal = dragRange;
+      // 音量
+      if (!isDargVerLeft!) {
+        FijkVolume.setVol(dragRange);
+      } else {
+        FijkPlugin.setScreenBrightness(dragRange);
+      }
+    });
+  }
+
+  _onVerticalDragEnd(detills) {
+    setState(() {
+      varTouchInitSuc = false;
+    });
+  }
+
+// +++++++++++++++++++++++++++++++++++++++++++
+
+  void _playerValueChanged() async {
+    // await player.stop();
     FijkValue value = player.value;
     if (value.duration != _duration) {
       setState(() {
         _duration = value.duration;
       });
     }
-
+    print(
+        '+++++++++ $value.state  播放器状态  ${value.state == FijkState.started} ++++++++++');
     bool playing = (value.state == FijkState.started);
     bool prepared = value.prepared;
-    String exception = value.exception.message;
+    String? exception = value.exception.message;
+    // 状态不一致，修改
     if (playing != _playing ||
         prepared != _prepared ||
         exception != _exception) {
@@ -159,6 +325,41 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
         _exception = exception;
       });
     }
+    // 播放完成
+    bool playend = (value.state == FijkState.completed);
+    // String nextVideoUrl = _videoSourceTabs!.video![widget.curTabIdx]!.list![widget.curActiveIdx + 1]!.url!;
+    bool isOverFlowTabLen =
+        widget.curTabIdx + 1 > _videoSourceTabs!.video!.length;
+    bool isOverFlowActiveLen = isOverFlowTabLen &&
+        widget.curActiveIdx + 1 >
+            _videoSourceTabs!.video![widget.curTabIdx]!.list!.length;
+    // 播放完成 && tablen没有溢出 && curActive没有溢出
+    if (playend && !isOverFlowTabLen && !isOverFlowActiveLen) {
+      int newTabIdx = widget.curTabIdx;
+      int newActiveIdx = widget.curActiveIdx + 1;
+      // widget.onChangeVideo!(newTabIdx, newActiveIdx);
+      // 切换播放源
+      changeCurPlayVideo(newTabIdx, newActiveIdx);
+    }
+  }
+
+  // 切换播放源
+  void changeCurPlayVideo(int tabIdx, int activeIdx) async {
+    await player.stop();
+    setState(() {
+      _buffering = false;
+    });
+    player.reset().then((_) {
+      _speed = speed = 1.0;
+      String curTabActiveUrl =
+          _videoSourceTabs!.video![tabIdx]!.list![activeIdx]!.url!;
+      player.setDataSource(
+        curTabActiveUrl,
+        autoPlay: true,
+      );
+      // 回调
+      widget.onChangeVideo!(tabIdx, activeIdx);
+    });
   }
 
   void _playOrPause() {
@@ -173,17 +374,29 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
   void dispose() {
     super.dispose();
     _hideTimer?.cancel();
+    _hideLockTimer?.cancel();
 
     player.removeListener(_playerValueChanged);
     _currentPosSubs?.cancel();
     _bufferPosSubs?.cancel();
+    _bufferingSubs?.cancel();
   }
 
   void _startHideTimer() {
     _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 3), () {
+    _hideTimer = Timer(const Duration(seconds: 5), () {
       setState(() {
         _hideStuff = true;
+        _hideSpeedStu = true;
+      });
+    });
+  }
+
+  void _startHideLockTimer() {
+    _hideLockTimer?.cancel();
+    _hideLockTimer = Timer(const Duration(seconds: 5), () {
+      setState(() {
+        _hideLockStuff = hideLockStuff = true;
       });
     });
   }
@@ -192,15 +405,22 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
     if (_hideStuff == true) {
       _startHideTimer();
     }
+
     setState(() {
       _hideStuff = !_hideStuff;
+      if (_hideStuff == true) {
+        _hideSpeedStu = true;
+      }
     });
   }
 
-  void _changePlayerLockState() {
+  void _cancelAndRestartLockTimer() {
+    if (_hideLockStuff == true) {
+      _startHideTimer();
+    }
+
     setState(() {
-      _lockStuff = !_lockStuff;
-      _cancelAndRestartTimer();
+      _hideLockStuff = !_hideLockStuff;
     });
   }
 
@@ -236,10 +456,11 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
         height: barHeight,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            begin: Alignment.topRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomLeft,
             colors: [
               Color.fromRGBO(0, 0, 0, 0),
-              Color.fromRGBO(0, 0, 0, 0.7),
+              Color.fromRGBO(0, 0, 0, 1),
             ],
           ),
         ),
@@ -247,6 +468,28 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
           children: <Widget>[
             // 按钮 - 播放/暂停
             _buildPlayStateBtn(),
+            // 下一集
+            IconButton(
+              icon: Icon(Icons.skip_next),
+              color: Colors.white,
+              padding: EdgeInsets.only(
+                left: 10.0,
+                right: 10.0,
+              ),
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onPressed: () {
+                bool isOverFlowActiveLen = widget.curActiveIdx + 1 >
+                    _videoSourceTabs!.video![widget.curTabIdx]!.list!.length;
+                // 播放完成
+                if (!isOverFlowActiveLen) {
+                  int newTabIdx = widget.curTabIdx;
+                  int newActiveIdx = widget.curActiveIdx + 1;
+                  // 切换播放源
+                  changeCurPlayVideo(newTabIdx, newActiveIdx);
+                }
+              },
+            ),
             // 已播放时间
             Padding(
               padding: EdgeInsets.only(right: 5.0, left: 5),
@@ -266,8 +509,8 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                       padding: EdgeInsets.only(right: 5, left: 5),
                       child: NewFijkSlider(
                         colors: NewFijkSliderColors(
-                          cursorColor: Theme.of(context).accentColor,
-                          playedColor: Theme.of(context).accentColor,
+                          cursorColor: Colors.blue,
+                          playedColor: Colors.blue,
                         ),
                         value: currentValue,
                         cacheValue: _bufferPos.inMilliseconds.toDouble(),
@@ -305,6 +548,48 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                       ),
                     ),
                   ),
+            // 倍数按钮
+            widget.player.value.fullScreen
+                ? Ink(
+                    padding: EdgeInsets.all(5),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _hideSpeedStu = !_hideSpeedStu;
+                        });
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 40,
+                        height: 30,
+                        child: Text(
+                          _speed.toString() + " X",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
+            // 剧集按钮
+            widget.player.value.fullScreen
+                ? Ink(
+                    padding: EdgeInsets.all(5),
+                    child: InkWell(
+                      onTap: () {
+                        _scaffoldKey.currentState!.openEndDrawer();
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 40,
+                        height: 30,
+                        child: Text(
+                          "剧集",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
             // 按钮 - 全屏/退出全屏
             IconButton(
               icon: Icon(widget.player.value.fullScreen
@@ -340,7 +625,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
             begin: Alignment.topLeft,
             end: Alignment.bottomLeft,
             colors: [
-              Color.fromRGBO(0, 0, 0, 0.7),
+              Color.fromRGBO(0, 0, 0, 1),
               Color.fromRGBO(0, 0, 0, 0),
             ],
           ),
@@ -368,17 +653,15 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
             ),
             Expanded(
               child: Container(
-                child: widget.playerTitle != null
-                    ? Text(
-                        widget.playerTitle != null ? widget.playerTitle : '',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      )
-                    : null,
+                child: Text(
+                  widget.playerTitle,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             )
           ],
@@ -395,23 +678,59 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
       width: double.infinity,
       child: Center(
         child: _exception != null
-            ? Text(
-                _exception,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                ),
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 失败图标
+                  Icon(
+                    Icons.error,
+                    size: 50,
+                    color: Colors.red,
+                  ),
+                  // 错误信息
+                  Text(
+                    "播放失败，您可以点击重试！",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  // 重试
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      elevation: MaterialStateProperty.all(0),
+                      backgroundColor: MaterialStateProperty.all(Colors.red),
+                    ),
+                    onPressed: () {
+                      // 切换视频
+                      changeCurPlayVideo(widget.curTabIdx, widget.curActiveIdx);
+                    },
+                    child: Text(
+                      "点击重试",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               )
-            : (_prepared || player.state == FijkState.initialized)
+            : (_prepared && !_buffering)
                 ? AnimatedOpacity(
                     opacity: _hideStuff ? 0.0 : 0.7,
                     duration: Duration(milliseconds: 400),
                     child: IconButton(
-                        iconSize: barHeight * 1.2,
-                        icon: Icon(_playing ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white),
-                        padding: EdgeInsets.only(left: 10.0, right: 10.0),
-                        onPressed: _playOrPause),
+                      iconSize: barHeight * 1.2,
+                      icon: Icon(_playing ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white),
+                      padding: EdgeInsets.only(left: 10.0, right: 10.0),
+                      onPressed: _playOrPause,
+                    ),
                   )
                 : SizedBox(
                     width: barHeight,
@@ -422,6 +741,200 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                   ),
       ),
     );
+  }
+
+  // build 滑动进度时间显示
+  Widget buildDargProgressTime() {
+    return _isTouch
+        ? Container(
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(
+                Radius.circular(5),
+              ),
+              color: Color.fromRGBO(0, 0, 0, 0.8),
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Text(
+                '${_duration2String(_dargPos)} / ${_duration2String(_duration)}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          )
+        : Container();
+  }
+
+  // build 显示垂直亮度，音量
+  Widget buildDargVolumeAndBrightness() {
+    // 不显示
+    if (!varTouchInitSuc) return Container();
+
+    IconData iconData;
+    // 判断当前值范围，显示的图标
+    if (updateDargVarVal! <= 0) {
+      iconData = !isDargVerLeft! ? Icons.volume_mute : Icons.brightness_low;
+    } else if (updateDargVarVal! < 0.5) {
+      iconData = !isDargVerLeft! ? Icons.volume_down : Icons.brightness_medium;
+    } else {
+      iconData = !isDargVerLeft! ? Icons.volume_up : Icons.brightness_high;
+    }
+    // 显示，亮度 || 音量
+    return Card(
+      color: Color.fromRGBO(0, 0, 0, 0.8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              iconData,
+              color: Colors.white,
+            ),
+            Container(
+              width: 100,
+              height: 3,
+              margin: EdgeInsets.only(left: 8),
+              child: LinearProgressIndicator(
+                value: updateDargVarVal,
+                backgroundColor: Colors.white54,
+                valueColor: AlwaysStoppedAnimation(Colors.lightBlue),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // build 倍数列表
+  List<Widget> buildSpeedListWidget() {
+    List<Widget> columnChild = [];
+    speedList.forEach((String mapKey, double speedVals) {
+      columnChild.add(
+        Ink(
+          child: InkWell(
+            onTap: () {
+              if (_speed == speedVals) return null;
+              setState(() {
+                _speed = speed = speedVals;
+                _hideSpeedStu = true;
+                player.setSpeed(speedVals);
+              });
+            },
+            child: Container(
+              alignment: Alignment.center,
+              width: 50,
+              height: 24,
+              child: Text(
+                mapKey + " X",
+                style: TextStyle(
+                  color: _speed == speedVals ? Colors.blue : Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      columnChild.add(
+        Padding(
+          padding: EdgeInsets.only(top: 5, bottom: 5),
+          child: Container(
+            width: 50,
+            height: 1,
+            color: Colors.white54,
+          ),
+        ),
+      );
+    });
+    columnChild.removeAt(columnChild.length - 1);
+    return columnChild;
+  }
+
+  // build 剧集
+  Widget buildPlayDrawer() {
+    return Drawer(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black87,
+          automaticallyImplyLeading: false,
+          elevation: 0.1,
+          title: TabBar(
+            tabs: _videoSourceTabs!.video!
+                .map((e) => Tab(text: e!.name!))
+                .toList(),
+            isScrollable: true,
+            controller: _tabController,
+          ),
+        ),
+        body: Container(
+          color: Colors.black87,
+          child: TabBarView(
+            controller: _tabController,
+            children: createTabConList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 剧集 tabCon
+  List<Widget> createTabConList() {
+    List<Widget> list = [];
+    _videoSourceTabs!.video!.asMap().keys.forEach((int tabIdx) {
+      List<Widget> playListBtns = _videoSourceTabs!.video![tabIdx]!.list!
+          .asMap()
+          .keys
+          .map((int activeIdx) {
+        return Padding(
+          padding: EdgeInsets.all(5),
+          child: ElevatedButton(
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              elevation: MaterialStateProperty.all(0),
+              backgroundColor: MaterialStateProperty.all(
+                  tabIdx == widget.curTabIdx && activeIdx == widget.curActiveIdx
+                      ? Colors.red
+                      : Colors.blue),
+            ),
+            onPressed: () {
+              int newTabIdx = tabIdx;
+              int newActiveIdx = activeIdx;
+              // 切换播放源
+              changeCurPlayVideo(newTabIdx, newActiveIdx);
+            },
+            child: Text(
+              _videoSourceTabs!.video![tabIdx]!.list![activeIdx]!.name!,
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      }).toList();
+      //
+      list.add(
+        SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(left: 5, right: 5),
+            child: Wrap(
+              direction: Axis.horizontal,
+              children: playListBtns,
+            ),
+          ),
+        ),
+      );
+    });
+    return list;
   }
 
   @override
@@ -442,74 +955,130 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
     return WillPopScope(
       child: Positioned.fromRect(
         rect: rect,
-        child: GestureDetector(
-          onTap: _cancelAndRestartTimer,
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragStart: _onHorizontalDragStart,
-          onHorizontalDragUpdate: _onHorizontalDragUpdate,
-          onHorizontalDragEnd: _onHorizontalDragEnd,
-          child: AbsorbPointer(
-            absorbing: _hideStuff && _lockStuff,
-            child: Column(
-              children: <Widget>[
-                // 播放器顶部控制器
-                isShowBox != null ? _buildTopBar() : Container(),
-                // 中间按钮
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      _cancelAndRestartTimer();
-                    },
-                    child: Container(
-                      child: Stack(
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // 显示快进时间的块
-                                _isTouch
-                                    ? Container(
-                                        height: 40,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(5),
+        child: Scaffold(
+          endDrawerEnableOpenDragGesture: false,
+          backgroundColor: Color.fromRGBO(0, 0, 0, 0),
+          key: _scaffoldKey,
+          endDrawer: buildPlayDrawer(),
+          body: !_lockStuff
+              ? GestureDetector(
+                  onTap: _cancelAndRestartTimer,
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: _onHorizontalDragStart,
+                  onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                  onHorizontalDragEnd: _onHorizontalDragEnd,
+                  onVerticalDragStart: _onVerticalDragStart,
+                  onVerticalDragUpdate: _onVerticalDragUpdate,
+                  onVerticalDragEnd: _onVerticalDragEnd,
+                  child: AbsorbPointer(
+                    absorbing: _hideStuff,
+                    child: Column(
+                      children: <Widget>[
+                        // 播放器顶部控制器
+                        isShowBox ? _buildTopBar() : Container(),
+                        // 中间按钮
+                        Expanded(
+                          child: Container(
+                            child: Stack(
+                              children: <Widget>[
+                                // 顶部显示
+                                Positioned(
+                                  top: widget.player.value.fullScreen ? 20 : 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // 显示左右滑动快进时间的块
+                                      buildDargProgressTime(),
+                                      // 显示上下滑动音量亮度
+                                      buildDargVolumeAndBrightness()
+                                    ],
+                                  ),
+                                ),
+                                // 中间按钮
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: _buildCenterPlayBtn(),
+                                ),
+                                // 倍数选择
+                                Positioned(
+                                  right: 88,
+                                  bottom: 0,
+                                  child: !_hideSpeedStu
+                                      ? Container(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(10),
+                                            child: Column(
+                                              children: buildSpeedListWidget(),
+                                            ),
                                           ),
-                                          color: Color.fromRGBO(0, 0, 0, 0.8),
-                                        ),
-                                        child: Padding(
-                                          padding: EdgeInsets.only(
-                                              left: 10, right: 10),
-                                          child: Text(
-                                            '${_duration2String(_dargPos)}/${_duration2String(_duration)}',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black45,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
-                                        ),
-                                      )
-                                    : Container()
+                                        )
+                                      : Container(),
+                                ),
+                                // 锁按钮
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: AnimatedOpacity(
+                                    opacity: _hideStuff ? 0.0 : 0.7,
+                                    duration: Duration(milliseconds: 400),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 40),
+                                      child: IconButton(
+                                        iconSize: 30,
+                                        onPressed: () {
+                                          setState(() {
+                                            _lockStuff = lockStuff = true;
+                                          });
+                                          _startHideLockTimer();
+                                        },
+                                        icon: Icon(Icons.lock_outline),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          // 中间按钮
-                          Align(
-                            alignment: Alignment.center,
-                            child: _buildCenterPlayBtn(),
-                          )
-                        ],
+                        ),
+                        // 播放器底部控制器
+                        _buildBottomBar(context),
+                      ],
+                    ),
+                  ),
+                )
+              : GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _cancelAndRestartLockTimer,
+                  child: Container(
+                    child: AnimatedOpacity(
+                      opacity: _hideLockStuff ? 0.0 : 0.7,
+                      duration: Duration(milliseconds: 400),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 40),
+                          child: IconButton(
+                            iconSize: 30,
+                            onPressed: () {
+                              setState(() {
+                                _lockStuff = lockStuff = false;
+                              });
+                            },
+                            icon: Icon(Icons.lock_open),
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-                // 播放器底部控制器
-                _buildBottomBar(context),
-              ],
-            ),
-          ),
         ),
       ),
       onWillPop: () async {

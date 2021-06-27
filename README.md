@@ -5,6 +5,18 @@
 这是一款 fijkplayer 播放器的普通皮肤，主要解决 fijkplayer 自带的皮肤不好看，没有手势拖动快进，快退
 fijkplayer_skin只是一款皮肤，并不是播放器，所以 fijkplayer 存在的问题，这里 fijkplayer_skin 一样存在
 
+# Flutter SDK要求
+sdk >= 2.12.0 支持空安全，关于sdk升级，请自行百度
+
+# 功能如下
+
+* 手势滑动，快进快退
+* 上下滑动（左：屏幕亮度 右：系统音量）
+* 视频内剧集切换 （全屏模式下，视频内部切换播放剧集）
+* 倍数切换，（全屏模式下，切换倍数）
+* 锁定，（锁定UI，防误触）
+* 设置视频顶部返回，标题
+
 ## 其他开源项目
 
 * [Dart-Cms](https://github.com/abcd498936590/Dart-Cms)  =>> Dart-Cms完整项目
@@ -25,6 +37,7 @@ fijkplayer_skin只是一款皮肤，并不是播放器，所以 fijkplayer 存�
 pubspec.yaml
 ```yaml
 dependencies:
+  fijkplayer: ${lastes_version}
   fijkplayer_skin: ${lastes_version}
 ```
 或者
@@ -34,30 +47,69 @@ fijkplayer_skin:
     url: git@github.com:abcd498936590/fijkplayer_skin.git
 ```
 
-## 使用示例
+## 使用示例 （包含剧集切换）
 ```dart
     
     import 'package:fijkplayer_skin/fijkplayer_skin.dart';
     import 'package:fijkplayer/fijkplayer.dart';
     
     class VideoScreen extends StatefulWidget {
-      final String url;
-
-      VideoScreen({@required this.url});
+      VideoScreen();
 
       @override
       _VideoScreenState createState() => _VideoScreenState();
     }
 
     class _VideoScreenState extends State<VideoScreen> {
+      // FijkPlayer实例
       final FijkPlayer player = FijkPlayer();
-
-      _VideoScreenState();
+      // 当前tab的index，默认0
+      int _curTabIdx = 0;
+      // 当前选中的tablist index，默认0
+      int _curActiveIdx = 0;
+      // 视频源列表，请参考当前videoList完整例子
+      Map<String, List<Map<String, dynamic>>> Map<String, List<Map<String, dynamic>>> videoList = {
+        "video": [
+          {
+            "name": "天空资源",
+            "list": [
+              {
+                "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
+                "name": "综艺"
+              },
+              {
+                "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
+                "name": "锤子1"
+              },
+              {
+                "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
+                "name": "锤子2"
+              }
+            ]
+          },
+          {
+            "name": "天空资源",
+            "list": [
+              {
+                "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
+                "name": "综艺"
+              },
+              {
+                "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
+                "name": "锤子1"
+              },
+              {
+                "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
+                "name": "锤子2"
+              }
+            ]
+          },
+        ]
+      };
 
       @override
       void initState() {
         super.initState();
-        player.setDataSource(widget.url, autoPlay: true);
       }
 
       @override
@@ -81,20 +133,28 @@ fijkplayer_skin:
                 ) {
                  /// 使用自定义的布局
                  return CustomFijkPanel(
-                   player: player,
-                   // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
-                   // 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
-                   buildContext: context,
-                   viewSize: viewSize,
-                   texturePos: texturePos,
-                   // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
-                   showTopCon: true,
-                   // 标题 当前页面顶部的标题部分
-                   playerTitle: "标题",
-                 );
-              },
-             );
-          )
+                    player: player,
+                    // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
+                    // 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
+                    buildContext: context,
+                    viewSize: viewSize,
+                    texturePos: texturePos,
+                    // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
+                    showTopCon: true,
+                    // 标题 当前页面顶部的标题部分，可以不传，默认空字符串
+                    playerTitle: "标题",
+                    // 当前视频改变钩子
+                    onChangeVideo: onChangeVideo,
+                    // 视频源列表
+                    videoList: videoList,
+                    // 当前视频源tabIndex
+                    curTabIdx: _curTabIdx,
+                    // 当前视频源activeIndex
+                    curActiveIdx: _curActiveIdx,
+                  );
+                },
+              );
+            )
         );
       }
 

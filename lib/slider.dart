@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 /// FijkSlider is like Slider in Flutter SDK.
@@ -10,7 +11,7 @@ class NewFijkSlider extends StatefulWidget {
   final double cacheValue;
 
   final ValueChanged<double> onChanged;
-  final ValueChanged<double> onChangeStart;
+  final ValueChanged<double>? onChangeStart;
   final ValueChanged<double> onChangeEnd;
 
   final double min;
@@ -19,12 +20,12 @@ class NewFijkSlider extends StatefulWidget {
   final NewFijkSliderColors colors;
 
   const NewFijkSlider({
-    Key key,
-    @required this.value,
-    @required this.onChanged,
+    Key? key,
+    required this.value,
+    required this.onChanged,
     this.cacheValue = 0.0,
     this.onChangeStart,
-    this.onChangeEnd,
+    required this.onChangeEnd,
     this.min = 0.0,
     this.max = 1.0,
     this.colors = const NewFijkSliderColors(),
@@ -45,7 +46,7 @@ class NewFijkSlider extends StatefulWidget {
 class _NewFijkSliderState extends State<NewFijkSlider> {
   bool dragging = false;
 
-  double dragValue;
+  late double dragValue;
 
   static const double margin = 2.0;
 
@@ -70,7 +71,7 @@ class _NewFijkSliderState extends State<NewFijkSlider> {
         });
         dragValue = widget.value;
         if (widget.onChangeStart != null) {
-          widget.onChangeStart(dragValue);
+          widget.onChangeStart!(dragValue);
         }
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
@@ -138,7 +139,7 @@ class _SliderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    double lineHeight = min(size.height / 2, 3);
+    double lineHeight = min(size.height / 2, 2);
     pt.color = colors.baselineColor;
 
     double radius = min(size.height / 2, 20);
