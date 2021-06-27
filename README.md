@@ -112,6 +112,13 @@ fijkplayer_skin:
         super.initState();
       }
 
+      void onChangeVideo(int curTabIdx, int curActiveIdx) {
+        this.setState(() {
+          _curTabIdx = curTabIdx;
+          _curActiveIdx = curActiveIdx;
+        });
+      }
+
       @override
       Widget build(BuildContext context) {
         return Scaffold(
