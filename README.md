@@ -2,7 +2,7 @@
 # fijkplayer_skin
 [![pub package](https://img.shields.io/pub/v/fijkplayer_skin.svg)](https://pub.dev/packages/fijkplayer_skin)
 
-这是一款 fijkplayer 播放器的普通皮肤，主要解决 fijkplayer 自带的皮肤不好看，没有手势拖动快进，快退
+这是一款 fijkplayer 播放器的普通皮肤，主要解决 fijkplayer 自带的皮肤不好看，没有手势拖动快进，快退 
 fijkplayer_skin只是一款皮肤，并不是播放器，所以 fijkplayer 存在的问题，这里 fijkplayer_skin 一样存在
 
 ## Flutter SDK要求
@@ -32,13 +32,13 @@ sdk >= 2.12.0 支持空安全
 ## 预览
 <p align="center">
   <img style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-0.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-1.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-2.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-3.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-4.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-5.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-6.png" />
-  <img width="380" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-7.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-1.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-2.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-3.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-4.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-5.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-6.png" />
+  <img width="350" style="max-width: 100%;" src="https://cdn.jsdelivr.net/gh/abcd498936590/pic@master/img/fijkplayer-skin-7.png" />
 </p>
 
 
@@ -56,153 +56,42 @@ fijkplayer_skin:
     url: git@github.com:abcd498936590/fijkplayer_skin.git
 ```
 
-## 使用示例 （包含剧集切换）
-```dart
-    
-    import 'package:fijkplayer/fijkplayer.dart';
-    import 'package:fijkplayer_skin/fijkplayer_skin.dart';
-    import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
-    
-    class VideoScreen extends StatefulWidget {
-      VideoScreen();
+## 参数说明
 
-      @override
-      _VideoScreenState createState() => _VideoScreenState();
-    }
+_curTabIdx 当前选中的tab索引，_curActiveIdx 当前选中的剧集索引。如果你使用过 react 你一定知道状态提升，父组件托管数据，子组件只负责渲染，这里的 _curTabIdx 和 _curActiveIdx 也是同理，在父组件中可以给多个需要该数据的组件传递。（包括皮肤内部也使用该数据）
 
-    class _VideoScreenState extends State<VideoScreen> {
-      // FijkPlayer实例
-      final FijkPlayer player = FijkPlayer();
-      // 当前tab的index，默认0
-      int _curTabIdx = 0;
-      // 当前选中的tablist index，默认0
-      int _curActiveIdx = 0;
-      // 视频源列表，请参考当前videoList完整例子
-      Map<String, List<Map<String, dynamic>>> Map<String, List<Map<String, dynamic>>> videoList = {
-        "video": [
-          {
-            "name": "天空资源",
-            "list": [
-              {
-                "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
-                "name": "综艺"
-              },
-              {
-                "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
-                "name": "锤子1"
-              },
-              {
-                "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
-                "name": "锤子2"
-              }
-            ]
-          },
-          {
-            "name": "天空资源",
-            "list": [
-              {
-                "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
-                "name": "综艺"
-              },
-              {
-                "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
-                "name": "锤子1"
-              },
-              {
-                "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
-                "name": "锤子2"
-              }
-            ]
-          },
-        ]
-      };
+videoList 存放视频列表，请参考我的格式，使用 fijkplayer_skin/schema.dart 中的 VideoSourceFormat 格式化数据
 
-      @override
-      void initState() {
-        super.initState();
-      }
+onChangeVideo（int curTabIdx, int curActiveIdx） 钩子函数，在播放器内切换剧集会触发该函数，回调参数是最新的 TabIdx 和 ActiveIdx ，用于更新托管在父组件中的 _curTabIdx 和 _curActiveIdx
 
-      // 播放器内部切换视频钩子，回调，tabIdx 和 activeIdx
-      void onChangeVideo(int curTabIdx, int curActiveIdx) {
-        this.setState(() {
-          _curTabIdx = curTabIdx;
-          _curActiveIdx = curActiveIdx;
-        });
-      }
+pageContent 传递的就是当前组件的 context，这里注意，你当前的根组件不要使用 MaterialApp 否则会报错，请使用 Scaffold
 
-      @override
-      Widget build(BuildContext context) {
-        return Scaffold(
-            appBar: AppBar(title: Text("Fijkplayer Example")),
-            body: Container(
-              alignment: Alignment.center,
-              // 这里 FijkView 开始为自定义 UI 部分
-              child: FijkView(
-                height: 240,
-                color: Colors.black,
-                fit: FijkFit.cover,
-                player: player,
-                panelBuilder: (
-                  FijkPlayer player,
-                  FijkData data,
-                  BuildContext context,
-                  Size viewSize,
-                  Rect texturePos,
-                ) {
-                 /// 使用自定义的布局
-                 return CustomFijkPanel(
-                    player: player,
-                    // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
-                    // 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
-                    buildContext: context,
-                    viewSize: viewSize,
-                    texturePos: texturePos,
-                    // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
-                    showTopCon: true,
-                    // 标题 当前页面顶部的标题部分，可以不传，默认空字符串
-                    playerTitle: "标题",
-                    // 当前视频改变钩子
-                    onChangeVideo: onChangeVideo,
-                    // 视频源列表
-                    videoList: videoList,
-                    // 当前视频源tabIndex
-                    curTabIdx: _curTabIdx,
-                    // 当前视频源activeIndex
-                    curActiveIdx: _curActiveIdx,
-                  );
-                },
-              );
-            )
-        );
-      }
 
-      @override
-      void dispose() {
-        super.dispose();
-        player.release();
-      }
-    }
-
-```
-
-## 以下是完整例子
-完整例子，包括剧集切换，播放器内部剧集切换与外部数据共享 tabIdx 和 activeIdx
+## 基本示例
 
 ```dart
 
+import 'package:flutter/material.dart';
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:fijkplayer_skin/fijkplayer_skin.dart';
 import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
-import 'package:flutter/material.dart';
 
-//
-void main() {
-  // debugPaintSizeEnabled = true;
-  runApp(MyApp());
+class VideoScreen extends StatefulWidget {
+  VideoScreen();
+
+  @override
+  _VideoScreenState createState() => _VideoScreenState();
 }
 
-class MyApp extends StatelessWidget {
-  final Map<String, List<Map<String, dynamic>>> videoList = {
+class _VideoScreenState extends State<VideoScreen> {
+  // FijkPlayer实例
+  final FijkPlayer player = FijkPlayer();
+  // 当前tab的index，默认0
+  int _curTabIdx = 0;
+  // 当前选中的tablist index，默认0
+  int _curActiveIdx = 0;
+  // 视频源列表，请参考当前videoList完整例子
+  Map<String, List<Map<String, dynamic>>> Map<String, List<Map<String, dynamic>>> videoList = {
     "video": [
       {
         "name": "天空资源",
@@ -242,6 +131,91 @@ class MyApp extends StatelessWidget {
   };
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    player?.dispose();
+    super.dispose();
+  }
+
+  // 播放器内部切换视频钩子，回调，tabIdx 和 activeIdx
+  void onChangeVideo(int curTabIdx, int curActiveIdx) {
+    this.setState(() {
+      _curTabIdx = curTabIdx;
+      _curActiveIdx = curActiveIdx;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text("Fijkplayer Example")),
+        body: Container(
+          alignment: Alignment.center,
+          // 这里 FijkView 开始为自定义 UI 部分
+          child: FijkView(
+            height: 240,
+            color: Colors.black,
+            fit: FijkFit.cover,
+            player: player,
+            panelBuilder: (
+              FijkPlayer player,
+              FijkData data,
+              BuildContext context,
+              Size viewSize,
+              Rect texturePos,
+            ) {
+              /// 使用自定义的布局
+              return CustomFijkPanel(
+                player: player,
+                // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
+                // 如果要点击箭头关闭当前的页面，那必须传递当前组件的根 context
+                pageContent: context,
+                viewSize: viewSize,
+                texturePos: texturePos,
+                // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
+                showTopCon: true,
+                // 标题 当前页面顶部的标题部分，可以不传，默认空字符串
+                playerTitle: "标题",
+                // 当前视频改变钩子
+                onChangeVideo: onChangeVideo,
+                // 视频源列表
+                videoList: videoList,
+                // 当前视频源tabIndex
+                curTabIdx: _curTabIdx,
+                // 当前视频源activeIndex
+                curActiveIdx: _curActiveIdx,
+              );
+            },
+          );
+        )
+    );
+  }
+
+}
+
+```
+
+## 以下是完整例子
+完整例子，包括剧集切换，播放器内部剧集切换与外部数据共享 tabIdx 和 activeIdx
+
+```dart
+
+import 'package:fijkplayer/fijkplayer.dart';
+import 'package:fijkplayer_skin/fijkplayer_skin.dart';
+import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
+import 'package:flutter/material.dart';
+
+void main() {
+  // debugPaintSizeEnabled = true;
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
@@ -253,7 +227,8 @@ class MyApp extends StatelessWidget {
         body: ListView(
           children: <Widget>[
             // 测试
-            VideoDetailPage(videoList),
+            // VideoDetailPage(videoList),
+            HomeIndex()
           ],
         ),
       ),
@@ -261,27 +236,127 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class VideoDetailPage extends StatefulWidget {
-  final Map<String, List<Map<String, dynamic>>> videoList;
-  VideoDetailPage(this.videoList);
-
+class HomeIndex extends StatefulWidget {
   @override
-  _VideoDetailPageState createState() => _VideoDetailPageState(videoList);
+  HomeIndexState createState() => HomeIndexState();
+}
+
+class HomeIndexState extends State<HomeIndex> {
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+        elevation: MaterialStateProperty.all(0),
+        backgroundColor: MaterialStateProperty.all(Colors.blue),
+      ),
+      onPressed: () async {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => Home2()));
+      },
+      child: Text(
+        "按钮",
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class Home2 extends StatefulWidget {
+  @override
+  Home2State createState() => Home2State();
+}
+
+class Home2State extends State<Home2> {
+  @override
+  Widget build(BuildContext context) {
+    // return VideoDetailPage();
+    return Scaffold(
+      body: Column(
+        children: [
+          Container(
+            height: 24,
+          ),
+          VideoDetailPage(),
+        ],
+      ),
+    );
+  }
+}
+
+class VideoDetailPage extends StatefulWidget {
+  @override
+  _VideoDetailPageState createState() => _VideoDetailPageState();
 }
 
 class _VideoDetailPageState extends State<VideoDetailPage>
     with TickerProviderStateMixin {
   final FijkPlayer player = FijkPlayer();
-  Map<String, List<Map<String, dynamic>>> videoList;
+  Map<String, List<Map<String, dynamic>>> videoList = {
+    "video": [
+      {
+        "name": "天空资源",
+        "list": [
+          {
+            "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
+            "name": "综艺"
+          },
+          {
+            "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
+            "name": "锤子1"
+          },
+          {
+            "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
+            "name": "锤子2"
+          }
+        ]
+      },
+      {
+        "name": "天空资源",
+        "list": [
+          {
+            "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
+            "name": "综艺"
+          },
+          {
+            "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
+            "name": "锤子1"
+          },
+          {
+            "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
+            "name": "锤子2"
+          }
+        ]
+      },
+    ]
+  };
 
-  // 格式化json数据，转对象
   VideoSourceFormat? _videoSourceTabs;
-  // 上一层传递过来的视频列表
-  _VideoDetailPageState(this.videoList);
   late TabController _tabController;
 
   int _curTabIdx = 0;
   int _curActiveIdx = 0;
+
+  @override
+  void dispose() {
+    player?.dispose();
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  // 钩子函数，用于更新状态
+  void onChangeVideo(int curTabIdx, int curActiveIdx) {
+    this.setState(() {
+      _curTabIdx = curTabIdx;
+      _curActiveIdx = curActiveIdx;
+    });
+  }
 
   @override
   void initState() {
@@ -298,15 +373,20 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   // build 剧集
   Widget buildPlayDrawer() {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black87,
-        automaticallyImplyLeading: false,
-        elevation: 0.1,
-        title: TabBar(
-          tabs:
-              _videoSourceTabs!.video!.map((e) => Tab(text: e!.name!)).toList(),
-          isScrollable: true,
-          controller: _tabController,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(24),
+        child: AppBar(
+          backgroundColor: Colors.black,
+          automaticallyImplyLeading: false,
+          primary: false,
+          elevation: 0,
+          title: TabBar(
+            tabs: _videoSourceTabs!.video!
+                .map((e) => Tab(text: e!.name!))
+                .toList(),
+            isScrollable: true,
+            controller: _tabController,
+          ),
         ),
       ),
       body: Container(
@@ -380,19 +460,6 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   }
 
   @override
-  void dispose() {
-    // controller.dispose();
-    super.dispose();
-  }
-
-  void onChangeVideo(int curTabIdx, int curActiveIdx) {
-    this.setState(() {
-      _curTabIdx = curTabIdx;
-      _curActiveIdx = curActiveIdx;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -411,11 +478,9 @@ class _VideoDetailPageState extends State<VideoDetailPage>
             /// 使用自定义的布局
             return CustomFijkPanel(
               player: player,
-              // 传递 context 用于左上角返回箭头关闭当前页面，不要传递错误 context，
-              // 如果要点击箭头关闭当前的页面，那必须传递当前页面的根 context
-              buildContext: context,
               viewSize: viewSize,
               texturePos: texturePos,
+              pageContent: context,
               // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
               showTopCon: true,
               // 标题 当前页面顶部的标题部分

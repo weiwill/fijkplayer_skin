@@ -30,26 +30,24 @@ String _duration2String(Duration duration) {
 
 class CustomFijkPanel extends StatefulWidget {
   final FijkPlayer player;
-  final BuildContext buildContext;
   final Size viewSize;
   final Rect texturePos;
   final BuildContext? pageContent;
   final String playerTitle;
   final bool showTopCon;
-  final Function? onChangeVideo;
+  final Function onChangeVideo;
   final int curTabIdx;
   final int curActiveIdx;
   final Map<String, List<Map<String, dynamic>>> videoList;
 
   CustomFijkPanel({
     required this.player,
-    required this.buildContext,
     required this.viewSize,
     required this.texturePos,
     this.pageContent,
     this.playerTitle = "",
     required this.showTopCon,
-    this.onChangeVideo,
+    required this.onChangeVideo,
     required this.videoList,
     required this.curTabIdx,
     required this.curActiveIdx,
@@ -358,7 +356,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         autoPlay: true,
       );
       // 回调
-      widget.onChangeVideo!(tabIdx, activeIdx);
+      widget.onChangeVideo(tabIdx, activeIdx);
     });
   }
 
@@ -646,8 +644,9 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
                 if (widget.player.value.fullScreen) {
                   player.exitFullScreen();
                 } else {
+                  if (widget.pageContent == null) return null;
                   player.stop();
-                  Navigator.pop(context);
+                  Navigator.pop(widget.pageContent!);
                 }
               },
             ),
@@ -1028,7 +1027,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
                                     opacity: _hideStuff ? 0.0 : 0.7,
                                     duration: Duration(milliseconds: 400),
                                     child: Padding(
-                                      padding: EdgeInsets.only(left: 40),
+                                      padding: EdgeInsets.only(left: 20),
                                       child: IconButton(
                                         iconSize: 30,
                                         onPressed: () {
@@ -1063,7 +1062,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
-                          padding: EdgeInsets.only(left: 40),
+                          padding: EdgeInsets.only(left: 20),
                           child: IconButton(
                             iconSize: 30,
                             onPressed: () {
