@@ -91,7 +91,7 @@ class _VideoScreenState extends State<VideoScreen> {
   // 当前选中的tablist index，默认0
   int _curActiveIdx = 0;
   // 视频源列表，请参考当前videoList完整例子
-  Map<String, List<Map<String, dynamic>>> Map<String, List<Map<String, dynamic>>> videoList = {
+  Map<String, List<Map<String, dynamic>>> videoList = {
     "video": [
       {
         "name": "天空资源",
@@ -191,7 +191,7 @@ class _VideoScreenState extends State<VideoScreen> {
               );
             },
           );
-        )
+        ),
     );
   }
 
