@@ -56,7 +56,7 @@ packages:
       name: fijkplayer
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub"
     source: hosted
-    version: "0.9.0"
+    version: "0.10.0"
   flutter:
     dependency: "direct main"
     description: flutter

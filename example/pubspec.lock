@@ -63,14 +63,14 @@ packages:
       name: fijkplayer
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub"
     source: hosted
-    version: "0.9.0"
+    version: "0.10.0"
   fijkplayer_skin:
     dependency: "direct dev"
     description:
       path: ".."
       relative: true
     source: path
-    version: "2.0.3"
+    version: "2.0.4"
   flutter:
     dependency: "direct main"
     description: flutter
