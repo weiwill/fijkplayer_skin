@@ -79,6 +79,10 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   bool _drawerState = false;
   Timer? _hideLockTimer;
 
+  FijkState? playerState;
+
+  StreamSubscription? _currentPosSubs;
+
   AnimationController? _animationController;
   Animation<Offset>? _animation;
 
@@ -87,6 +91,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
       duration: const Duration(milliseconds: 240),
       vsync: this,
     );
+    // init animation
     _animation = Tween(
       begin: Offset(1, 0),
       end: Offset.zero,
@@ -95,12 +100,14 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
     _videoSourceTabs = VideoSourceFormat.fromJson(videoList);
     // is not null
     if (_videoSourceTabs!.video!.length < 1) return null;
+    // init tabbar
     setState(() {
       _tabController = TabController(
         length: _videoSourceTabs!.video!.length,
         vsync: this,
       );
     });
+    player.addListener(_playerValueChanged);
     Wakelock.enable();
   }
 
@@ -112,11 +119,20 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   @override
   void dispose() {
+    _currentPosSubs?.cancel();
     _hideLockTimer?.cancel();
     _tabController.dispose();
+    player.removeListener(_playerValueChanged);
     _animationController!.dispose();
     Wakelock.disable();
     super.dispose();
+  }
+
+  // 获得播放器状态
+  _playerValueChanged() {
+    setState(() {
+      playerState = player.value.state;
+    });
   }
 
   // 切换UI 播放列表显示状态
@@ -426,7 +442,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
     List<Widget> ws = [];
 
-    if (player.state == FijkState.error) {
+    if (playerState == FijkState.error) {
       ws.add(
         _buildErrorWidget(),
       );
