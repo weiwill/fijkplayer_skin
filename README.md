@@ -43,6 +43,8 @@ sdk >= 2.12.0 支持空安全
 
 
 ## 安装
+> 如果 pub 安装失败或者不能使用，请更换git方式引入
+
 pubspec.yaml
 ```yaml
 dependencies:
@@ -133,11 +135,13 @@ class _VideoScreenState extends State<VideoScreen> {
   @override
   void initState() {
     super.initState();
+    // 这句不能省，必须有
+    speed = 1.0;
   }
 
   @override
   void dispose() {
-    player?.dispose();
+    player.dispose();
     super.dispose();
   }
 
@@ -188,6 +192,8 @@ class _VideoScreenState extends State<VideoScreen> {
                 curTabIdx: _curTabIdx,
                 // 当前视频源activeIndex
                 curActiveIdx: _curActiveIdx,
+                // 是否填充导航栏
+                isFillingNav: true,
               );
             },
           );
@@ -345,8 +351,8 @@ class _VideoDetailPageState extends State<VideoDetailPage>
 
   @override
   void dispose() {
-    player?.dispose();
-    _tabController?.dispose();
+    player.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -368,6 +374,8 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       length: _videoSourceTabs!.video!.length,
       vsync: this,
     );
+    // 这句不能省，必须有
+    speed = 1.0;
   }
 
   // build 剧集
@@ -493,6 +501,8 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               curTabIdx: _curTabIdx,
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
+              // 是否填充导航栏
+              isFillingNav: true,
             );
           },
         ),

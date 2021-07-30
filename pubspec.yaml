@@ -1,6 +1,6 @@
 name: fijkplayer_skin
 description: flutter the skin
-version: 2.0.4
+version: 2.0.5
 homepage: https://github.com/abcd498936590/fijkplayer_skin
 
 environment:
@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   fijkplayer: ^0.10.0
+  wakelock: ^0.5.2
 
 dev_dependencies:
   flutter_test:

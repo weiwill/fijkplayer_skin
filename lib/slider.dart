@@ -29,13 +29,7 @@ class NewFijkSlider extends StatefulWidget {
     this.min = 0.0,
     this.max = 1.0,
     this.colors = const NewFijkSliderColors(),
-  })  : assert(value != null),
-        assert(cacheValue != null),
-        assert(min != null),
-        assert(max != null),
-        assert(min <= max),
-        assert(value >= min && value <= max),
-        super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -80,6 +74,7 @@ class _NewFijkSliderState extends State<NewFijkSlider> {
         dragValue = (dx - margin) / (box.size.width - 2 * margin);
         dragValue = max(0, min(1, dragValue));
         dragValue = dragValue * (widget.max - widget.min) + widget.min;
+        // ignore: unnecessary_null_comparison
         if (widget.onChanged != null) {
           widget.onChanged(dragValue);
         }
@@ -88,6 +83,7 @@ class _NewFijkSliderState extends State<NewFijkSlider> {
         setState(() {
           dragging = false;
         });
+        // ignore: unnecessary_null_comparison
         if (widget.onChangeEnd != null) {
           widget.onChangeEnd(dragValue);
         }
@@ -132,10 +128,7 @@ class _SliderPainter extends CustomPainter {
   final NewFijkSliderColors colors;
 
   _SliderPainter(this.v, this.cv, this.dragging,
-      {this.colors = const NewFijkSliderColors()})
-      : assert(colors != null),
-        assert(v != null),
-        assert(cv != null);
+      {this.colors = const NewFijkSliderColors()});
 
   @override
   void paint(Canvas canvas, Size size) {
