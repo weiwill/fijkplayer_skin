@@ -17,6 +17,7 @@ final double barHeight = 50.0;
 final double barFillingHeight =
     MediaQueryData.fromWindow(window).padding.top + barHeight;
 final double barGap = barFillingHeight - barHeight;
+FijkState? playerState;
 
 String _duration2String(Duration duration) {
   if (duration.inMilliseconds < 0) return "-: negtive";
@@ -79,7 +80,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   bool _drawerState = false;
   Timer? _hideLockTimer;
 
-  FijkState? playerState;
+  FijkState? _playerState = playerState;
 
   StreamSubscription? _currentPosSubs;
 
@@ -131,7 +132,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   // 获得播放器状态
   _playerValueChanged() {
     setState(() {
-      playerState = player.value.state;
+      _playerState = playerState = player.value.state;
     });
   }
 
@@ -229,25 +230,82 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   // 返回按钮
   Widget _buildTopBackBtn() {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      padding: EdgeInsets.only(
-        left: 10.0,
-        right: 10.0,
+    return Container(
+      height: barHeight,
+      alignment: Alignment.centerLeft,
+      child: IconButton(
+        icon: Icon(Icons.arrow_back),
+        padding: EdgeInsets.only(
+          left: 10.0,
+          right: 10.0,
+        ),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        color: Colors.white,
+        onPressed: () {
+          // 判断当前是否全屏，如果全屏，退出
+          if (widget.player.value.fullScreen) {
+            player.exitFullScreen();
+          } else {
+            if (widget.pageContent == null) return null;
+            player.stop();
+            Navigator.pop(widget.pageContent!);
+          }
+        },
       ),
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      color: Colors.white,
-      onPressed: () {
-        // 判断当前是否全屏，如果全屏，退出
-        if (widget.player.value.fullScreen) {
-          player.exitFullScreen();
-        } else {
-          if (widget.pageContent == null) return null;
-          player.stop();
-          Navigator.pop(widget.pageContent!);
-        }
-      },
+    );
+  }
+
+  // 错误状态
+  Widget _buildErrorContext() {
+    return Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: widget.isFillingNav && !widget.player.value.fullScreen
+                ? barGap
+                : 0,
+          ),
+          // 失败图标
+          Icon(
+            Icons.error,
+            size: 50,
+            color: Colors.yellow,
+          ),
+          // 错误信息
+          Text(
+            "播放失败，您可以点击重试！",
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 5),
+          // 重试
+          ElevatedButton(
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              elevation: MaterialStateProperty.all(0),
+              backgroundColor: MaterialStateProperty.all(Colors.blue),
+            ),
+            onPressed: () {
+              // 切换视频
+              changeCurPlayVideo(widget.curTabIdx, widget.curActiveIdx);
+            },
+            child: Text(
+              "点击重试",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -255,61 +313,26 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   Widget _buildErrorWidget() {
     return Container(
       color: Colors.transparent,
-      height: double.infinity,
-      width: double.infinity,
-      child: Column(
+      child: Stack(
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            child: _buildTopBackBtn(),
-          ),
-          Expanded(
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 失败图标
-                  Icon(
-                    Icons.error,
-                    size: 50,
-                    color: Colors.red,
-                  ),
-                  // 错误信息
-                  Text(
-                    "播放失败，您可以点击重试！",
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // 重试
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all(0),
-                      backgroundColor: MaterialStateProperty.all(Colors.red),
-                    ),
-                    onPressed: () {
-                      // 切换视频
-                      changeCurPlayVideo(widget.curTabIdx, widget.curActiveIdx);
-                    },
-                    child: Text(
-                      "点击重试",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                ],
-              ),
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              height: widget.isFillingNav && !widget.player.value.fullScreen
+                  ? barFillingHeight
+                  : barHeight,
+              alignment: Alignment.bottomLeft,
+              child: _buildTopBackBtn(),
             ),
           ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+            child: _buildErrorContext(),
+          )
         ],
       ),
     );
@@ -442,7 +465,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
     List<Widget> ws = [];
 
-    if (playerState == FijkState.error) {
+    if (_playerState == FijkState.error) {
       ws.add(
         _buildErrorWidget(),
       );
@@ -800,11 +823,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     bool playend = (value.state == FijkState.completed);
     String nextVideoUrl = _videoSourceTabs!
         .video![widget.curTabIdx]!.list![widget.curActiveIdx + 1]!.url!;
-    // bool isOverFlowTabLen =
-    //     widget.curTabIdx + 1 >= _videoSourceTabs!.video!.length;
-    // bool isOverFlowActiveLen = isOverFlowTabLen &&
-    //     widget.curActiveIdx + 1 >=
-    //         _videoSourceTabs!.video![widget.curTabIdx]!.list!.length;
     // 播放完成 && tablen没有溢出 && curActive没有溢出
     // ignore: unnecessary_null_comparison
     if (playend && nextVideoUrl != null) {
