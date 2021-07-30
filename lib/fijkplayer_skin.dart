@@ -426,22 +426,21 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
     List<Widget> ws = [];
 
-    if (_lockStuff == true && player.state != FijkState.error) {
+    if (player.state == FijkState.error) {
       ws.add(
-        _buidLockStateDetctor(),
+        _buildErrorWidget(),
       );
     } else {
-      if (_drawerState == true && widget.player.value.fullScreen) {
+      if (_lockStuff == true) {
+        ws.add(
+          _buidLockStateDetctor(),
+        );
+      } else if (_drawerState == true && widget.player.value.fullScreen) {
         ws.add(
           _buildPlayerListDrawer(),
         );
-      } else if (player.state == FijkState.error) {
-        ws.add(
-          _buildErrorWidget(),
-        );
       } else {
         ws.add(
-          // 直接控制器，
           _buildGestureDetector(
             curActiveIdx: widget.curActiveIdx,
             curTabIdx: widget.curTabIdx,
