@@ -272,13 +272,13 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
           Icon(
             Icons.error,
             size: 50,
-            color: Colors.yellow,
+            color: Colors.white,
           ),
           // 错误信息
           Text(
             "播放失败，您可以点击重试！",
             style: TextStyle(
-              color: Colors.red,
+              color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -293,7 +293,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
                 ),
               ),
               elevation: MaterialStateProperty.all(0),
-              backgroundColor: MaterialStateProperty.all(Colors.blue),
+              backgroundColor: MaterialStateProperty.all(Colors.white),
             ),
             onPressed: () {
               // 切换视频
@@ -301,7 +301,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
             },
             child: Text(
               "点击重试",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.black),
             ),
           ),
         ],
@@ -312,7 +312,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   // 播放错误状态
   Widget _buildErrorWidget() {
     return Container(
-      color: Colors.transparent,
+      color: Colors.black,
       child: Stack(
         children: [
           Positioned(
