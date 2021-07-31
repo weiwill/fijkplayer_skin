@@ -17,7 +17,6 @@ final double barHeight = 50.0;
 final double barFillingHeight =
     MediaQueryData.fromWindow(window).padding.top + barHeight;
 final double barGap = barFillingHeight - barHeight;
-FijkState? playerState;
 
 String _duration2String(Duration duration) {
   if (duration.inMilliseconds < 0) return "-: negtive";
@@ -80,7 +79,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   bool _drawerState = false;
   Timer? _hideLockTimer;
 
-  FijkState? _playerState = playerState;
+  FijkState? _playerState;
 
   StreamSubscription? _currentPosSubs;
 
@@ -108,6 +107,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         vsync: this,
       );
     });
+    _playerState = player.value.state;
     player.addListener(_playerValueChanged);
     Wakelock.enable();
   }
@@ -132,7 +132,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   // 获得播放器状态
   _playerValueChanged() {
     setState(() {
-      _playerState = playerState = player.value.state;
+      _playerState = player.value.state;
     });
   }
 

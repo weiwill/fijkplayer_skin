@@ -137,8 +137,6 @@ class _VideoScreenState extends State<VideoScreen> {
     super.initState();
     // 这句不能省，必须有
     speed = 1.0;
-    // ignore: unused_local_variable
-    FijkState? playerState;
   }
 
   @override
@@ -378,8 +376,6 @@ class _VideoDetailPageState extends State<VideoDetailPage>
     );
     // 这句不能省，必须有
     speed = 1.0;
-    // ignore: unused_local_variable
-    FijkState? playerState;
   }
 
   // build 剧集
