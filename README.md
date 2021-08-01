@@ -180,7 +180,7 @@ class _VideoScreenState extends State<VideoScreen> {
           alignment: Alignment.center,
           // 这里 FijkView 开始为自定义 UI 部分
           child: FijkView(
-            height: 240,
+            height: 260,
             color: Colors.black,
             fit: FijkFit.cover,
             player: player,
@@ -504,7 +504,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
     return Column(
       children: [
         FijkView(
-          height: 240,
+          height: 260,
           color: Colors.black,
           fit: FijkFit.cover,
           player: player,

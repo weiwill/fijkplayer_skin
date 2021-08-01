@@ -1205,8 +1205,8 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                 ),
               )
             : SizedBox(
-                width: barHeight,
-                height: barHeight,
+                width: barHeight * 0.8,
+                height: barHeight * 0.8,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation(Colors.white),
                 ),
@@ -1354,72 +1354,70 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                   ),
             // 中间按钮
             Expanded(
-              child: Container(
-                child: Stack(
-                  children: <Widget>[
-                    // 顶部显示
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 显示左右滑动快进时间的块
-                          buildDargProgressTime(),
-                          // 显示上下滑动音量亮度
-                          buildDargVolumeAndBrightness()
-                        ],
-                      ),
+              child: Stack(
+                children: <Widget>[
+                  // 顶部显示
+                  Positioned(
+                    top: widget.player.value.fullScreen ? 20 : 0,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 显示左右滑动快进时间的块
+                        buildDargProgressTime(),
+                        // 显示上下滑动音量亮度
+                        buildDargVolumeAndBrightness()
+                      ],
                     ),
-                    // 中间按钮
-                    Align(
-                      alignment: Alignment.center,
-                      child: _buildCenterPlayBtn(),
-                    ),
-                    // 倍数选择
-                    Positioned(
-                      right: 35,
-                      bottom: 0,
-                      child: !_hideSpeedStu
-                          ? Container(
-                              child: Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Column(
-                                  children: buildSpeedListWidget(),
-                                ),
+                  ),
+                  // 中间按钮
+                  Align(
+                    alignment: Alignment.center,
+                    child: _buildCenterPlayBtn(),
+                  ),
+                  // 倍数选择
+                  Positioned(
+                    right: 35,
+                    bottom: 0,
+                    child: !_hideSpeedStu
+                        ? Container(
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Column(
+                                children: buildSpeedListWidget(),
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.black45,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            )
-                          : Container(),
-                    ),
-                    // 锁按钮
-                    showConfig.lockBtn
-                        ? Align(
-                            alignment: Alignment.centerLeft,
-                            child: AnimatedOpacity(
-                              opacity: _hideStuff ? 0.0 : 0.7,
-                              duration: Duration(milliseconds: 400),
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 20),
-                                child: IconButton(
-                                  iconSize: 30,
-                                  onPressed: () {
-                                    // 更改 ui显示状态
-                                    widget.changeLockState(true);
-                                  },
-                                  icon: Icon(Icons.lock_outline),
-                                  color: Colors.white,
-                                ),
-                              ),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           )
                         : Container(),
-                  ],
-                ),
+                  ),
+                  // 锁按钮
+                  showConfig.lockBtn
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: AnimatedOpacity(
+                            opacity: _hideStuff ? 0.0 : 0.7,
+                            duration: Duration(milliseconds: 400),
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 20),
+                              child: IconButton(
+                                iconSize: 30,
+                                onPressed: () {
+                                  // 更改 ui显示状态
+                                  widget.changeLockState(true);
+                                },
+                                icon: Icon(Icons.lock_outline),
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(),
+                ],
               ),
             ),
             // 播放器底部控制器
