@@ -1359,7 +1359,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                   children: <Widget>[
                     // 顶部显示
                     Positioned(
-                      top: widget.player.value.fullScreen ? 20 : 0,
+                      top: 0,
                       left: 0,
                       right: 0,
                       child: Row(
