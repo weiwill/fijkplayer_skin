@@ -114,8 +114,8 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         length: _videoSourceTabs!.video!.length,
         vsync: this,
       );
+      _playerState = player.value.state;
     });
-    _playerState = player.value.state;
     player.addListener(_playerValueChanged);
     Wakelock.enable();
   }
