@@ -12,11 +12,19 @@ import './slider.dart' show NewFijkSliderColors, NewFijkSlider;
 double speed = 1.0;
 bool lockStuff = false;
 bool hideLockStuff = false;
-bool isFillingNav = false;
 final double barHeight = 50.0;
 final double barFillingHeight =
     MediaQueryData.fromWindow(window).padding.top + barHeight;
 final double barGap = barFillingHeight - barHeight;
+
+abstract class ShowConfigAbs {
+  late bool nextBtn;
+  late bool speedBtn;
+  late bool drawerBtn;
+  late bool lockBtn;
+  late bool topBar;
+  late bool autoNext;
+}
 
 String _duration2String(Duration duration) {
   if (duration.inMilliseconds < 0) return "-: negtive";
@@ -40,11 +48,11 @@ class CustomFijkPanel extends StatefulWidget {
   final Rect texturePos;
   final BuildContext? pageContent;
   final String playerTitle;
-  final bool showTopCon;
   final Function onChangeVideo;
   final int curTabIdx;
   final int curActiveIdx;
   final bool isFillingNav;
+  final ShowConfigAbs showConfig;
   final Map<String, List<Map<String, dynamic>>> videoList;
 
   CustomFijkPanel({
@@ -53,7 +61,7 @@ class CustomFijkPanel extends StatefulWidget {
     required this.texturePos,
     this.pageContent,
     this.playerTitle = "",
-    required this.showTopCon,
+    required this.showConfig,
     required this.onChangeVideo,
     required this.videoList,
     required this.curTabIdx,
@@ -68,7 +76,7 @@ class CustomFijkPanel extends StatefulWidget {
 class _CustomFijkPanelState extends State<CustomFijkPanel>
     with TickerProviderStateMixin {
   FijkPlayer get player => widget.player;
-  bool get isShowBox => widget.showTopCon;
+  ShowConfigAbs get showConfig => widget.showConfig;
   Map<String, List<Map<String, dynamic>>> get videoList => widget.videoList;
 
   VideoSourceFormat? _videoSourceTabs;
@@ -315,17 +323,20 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
       color: Colors.black,
       child: Stack(
         children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            child: Container(
-              height: widget.isFillingNav && !widget.player.value.fullScreen
-                  ? barFillingHeight
-                  : barHeight,
-              alignment: Alignment.bottomLeft,
-              child: _buildTopBackBtn(),
-            ),
-          ),
+          showConfig.topBar
+              ? Positioned(
+                  left: 0,
+                  top: 0,
+                  child: Container(
+                    height:
+                        widget.isFillingNav && !widget.player.value.fullScreen
+                            ? barFillingHeight
+                            : barHeight,
+                    alignment: Alignment.bottomLeft,
+                    child: _buildTopBackBtn(),
+                  ),
+                )
+              : Container(),
           Positioned(
             left: 0,
             right: 0,
@@ -470,7 +481,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         _buildErrorWidget(),
       );
     } else {
-      if (_lockStuff == true) {
+      if (_lockStuff == true && showConfig.lockBtn) {
         ws.add(
           _buidLockStateDetctor(),
         );
@@ -486,7 +497,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
             onChangeVideo: widget.onChangeVideo,
             player: widget.player,
             texturePos: widget.texturePos,
-            showTopCon: widget.showTopCon,
+            showConfig: widget.showConfig,
             pageContent: widget.pageContent,
             playerTitle: widget.playerTitle,
             viewSize: widget.viewSize,
@@ -521,13 +532,13 @@ class _buildGestureDetector extends StatefulWidget {
   final Rect texturePos;
   final BuildContext? pageContent;
   final String playerTitle;
-  final bool showTopCon;
   final Function onChangeVideo;
   final int curTabIdx;
   final int curActiveIdx;
-  final Map<String, List<Map<String, dynamic>>> videoList;
   final Function changeDrawerState;
   final Function changeLockState;
+  final ShowConfigAbs showConfig;
+  final Map<String, List<Map<String, dynamic>>> videoList;
   final bool isFillingNav;
   // 每次重绘的时候，设置显示
   final _hideStuff = false;
@@ -538,7 +549,7 @@ class _buildGestureDetector extends StatefulWidget {
     required this.texturePos,
     this.pageContent,
     this.playerTitle = "",
-    required this.showTopCon,
+    required this.showConfig,
     required this.onChangeVideo,
     required this.curTabIdx,
     required this.curActiveIdx,
@@ -556,7 +567,7 @@ class _buildGestureDetector extends StatefulWidget {
 // ignore: camel_case_types
 class _buildGestureDetectorState extends State<_buildGestureDetector> {
   FijkPlayer get player => widget.player;
-  bool get isShowBox => widget.showTopCon;
+  ShowConfigAbs get showConfig => widget.showConfig;
   Map<String, List<Map<String, dynamic>>> get videoList => widget.videoList;
 
   Duration _duration = Duration();
@@ -595,6 +606,8 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
 
   bool _hideSpeedStu = true;
   double _speed = speed;
+
+  bool _isHorizontalMove = false;
 
   Map<String, double> speedList = {
     "2.0": 2.0,
@@ -690,7 +703,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     int pdx = updatePrevDx!.toInt();
     bool isBefore = cdx > pdx;
     // + -, 不满足, 左右滑动合法滑动值，> 4
-    if (isBefore && cdx - pdx < 3 || !isBefore && pdx - cdx < 3) return null;
+    if (isBefore && cdx - pdx < 2 || !isBefore && pdx - cdx < 2) return null;
 
     int dragRange = isBefore ? updatePosX! + 1 : updatePosX! - 1;
 
@@ -705,6 +718,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     }
     //
     this.setState(() {
+      _isHorizontalMove = true;
       _hideStuff = false;
       _isTouch = true;
       // 更新下上一次存的滑动位置
@@ -718,6 +732,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   _onHorizontalDragEnd(detills) {
     player.seekTo(_dargPos.inMilliseconds);
     this.setState(() {
+      _isHorizontalMove = false;
       _isTouch = false;
       _hideStuff = true;
       _currentPos = _dargPos;
@@ -825,7 +840,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
         .video![widget.curTabIdx]!.list![widget.curActiveIdx + 1]!.url!;
     // 播放完成 && tablen没有溢出 && curActive没有溢出
     // ignore: unnecessary_null_comparison
-    if (playend && nextVideoUrl != null) {
+    if (playend && nextVideoUrl != null && showConfig.autoNext) {
       int newTabIdx = widget.curTabIdx;
       int newActiveIdx = widget.curActiveIdx + 1;
       widget.onChangeVideo(newTabIdx, newActiveIdx);
@@ -904,8 +919,11 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   // 控制器ui 底部
   AnimatedOpacity _buildBottomBar(BuildContext context) {
     double duration = _duration.inMilliseconds.toDouble();
-    double currentValue =
-        _seekPos > 0 ? _seekPos : _currentPos.inMilliseconds.toDouble();
+    double currentValue = _seekPos > 0
+        ? _seekPos
+        : (_isHorizontalMove
+            ? _dargPos.inMilliseconds.toDouble()
+            : _currentPos.inMilliseconds.toDouble());
     currentValue = min(currentValue, duration);
     currentValue = max(currentValue, 0);
 
@@ -929,27 +947,30 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
             // 按钮 - 播放/暂停
             _buildPlayStateBtn(),
             // 下一集
-            IconButton(
-              icon: Icon(Icons.skip_next),
-              color: Colors.white,
-              padding: EdgeInsets.only(
-                left: 10.0,
-                right: 10.0,
-              ),
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onPressed: () {
-                bool isOverFlowActiveLen = widget.curActiveIdx + 1 >
-                    _videoSourceTabs!.video![widget.curTabIdx]!.list!.length;
-                // 播放完成
-                if (!isOverFlowActiveLen) {
-                  int newTabIdx = widget.curTabIdx;
-                  int newActiveIdx = widget.curActiveIdx + 1;
-                  // 切换播放源
-                  changeCurPlayVideo(newTabIdx, newActiveIdx);
-                }
-              },
-            ),
+            showConfig.nextBtn
+                ? IconButton(
+                    icon: Icon(Icons.skip_next),
+                    color: Colors.white,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onPressed: () {
+                      bool isOverFlowActiveLen = widget.curActiveIdx + 1 >
+                          _videoSourceTabs!
+                              .video![widget.curTabIdx]!.list!.length;
+                      // 播放完成
+                      if (!isOverFlowActiveLen) {
+                        int newTabIdx = widget.curTabIdx;
+                        int newActiveIdx = widget.curActiveIdx + 1;
+                        // 切换播放源
+                        changeCurPlayVideo(newTabIdx, newActiveIdx);
+                      }
+                    },
+                  )
+                : Container(),
             // 已播放时间
             Padding(
               padding: EdgeInsets.only(right: 5.0, left: 5),
@@ -1026,8 +1047,29 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                       ),
                     ),
                   ),
+            // 剧集按钮
+            widget.player.value.fullScreen && showConfig.drawerBtn
+                ? Ink(
+                    padding: EdgeInsets.all(5),
+                    child: InkWell(
+                      onTap: () {
+                        // 调用父组件的回调
+                        widget.changeDrawerState(true);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 40,
+                        height: 30,
+                        child: Text(
+                          "剧集",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
             // 倍数按钮
-            widget.player.value.fullScreen
+            widget.player.value.fullScreen && showConfig.speedBtn
                 ? Ink(
                     padding: EdgeInsets.all(5),
                     child: InkWell(
@@ -1042,27 +1084,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                         height: 30,
                         child: Text(
                           _speed.toString() + " X",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(),
-            // 剧集按钮
-            widget.player.value.fullScreen
-                ? Ink(
-                    padding: EdgeInsets.all(5),
-                    child: InkWell(
-                      onTap: () {
-                        // 调用父组件的回调
-                        widget.changeDrawerState(true);
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: 40,
-                        height: 30,
-                        child: Text(
-                          "剧集",
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -1323,7 +1344,14 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
         child: Column(
           children: <Widget>[
             // 播放器顶部控制器
-            isShowBox ? _buildTopBar() : Container(),
+            showConfig.topBar
+                ? _buildTopBar()
+                : Container(
+                    height:
+                        widget.isFillingNav && !widget.player.value.fullScreen
+                            ? barFillingHeight
+                            : barHeight,
+                  ),
             // 中间按钮
             Expanded(
               child: Container(
@@ -1351,7 +1379,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                     ),
                     // 倍数选择
                     Positioned(
-                      right: 88,
+                      right: 35,
                       bottom: 0,
                       child: !_hideSpeedStu
                           ? Container(
@@ -1369,25 +1397,27 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                           : Container(),
                     ),
                     // 锁按钮
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: AnimatedOpacity(
-                        opacity: _hideStuff ? 0.0 : 0.7,
-                        duration: Duration(milliseconds: 400),
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 20),
-                          child: IconButton(
-                            iconSize: 30,
-                            onPressed: () {
-                              // 更改 ui显示状态
-                              widget.changeLockState(true);
-                            },
-                            icon: Icon(Icons.lock_outline),
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
+                    showConfig.lockBtn
+                        ? Align(
+                            alignment: Alignment.centerLeft,
+                            child: AnimatedOpacity(
+                              opacity: _hideStuff ? 0.0 : 0.7,
+                              duration: Duration(milliseconds: 400),
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: IconButton(
+                                  iconSize: 30,
+                                  onPressed: () {
+                                    // 更改 ui显示状态
+                                    widget.changeLockState(true);
+                                  },
+                                  icon: Icon(Icons.lock_outline),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(),
                   ],
                 ),
               ),

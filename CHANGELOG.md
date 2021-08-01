@@ -1,3 +1,3 @@
-## [2.0.11] - TODO: Add release date.
+## [2.1.0] - TODO: Add release date.
 
 * TODO: Describe initial release.

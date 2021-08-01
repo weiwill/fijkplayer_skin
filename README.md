@@ -16,6 +16,7 @@ sdk >= 2.12.0 支持空安全
 * 倍数切换，（全屏模式下，切换倍数）
 * 锁定，（锁定UI，防误触）
 * 设置视频顶部返回，标题
+* 支持部分UI配置显示隐藏
 
 ## 其他开源项目
 
@@ -68,6 +69,12 @@ onChangeVideo（int curTabIdx, int curActiveIdx） 钩子函数，在播放器�
 
 pageContent 传递的就是当前组件的 context，这里注意，你当前的根组件不要使用 MaterialApp 否则会报错，请使用 Scaffold
 
+isFillingNav 是否填充状态栏，（默认false），如果开启，皮肤会计算状态栏高度，在播放器顶部多预览状态栏的高度
+
+showConfig 传递一个接口实例，抽象类 ShowConfigAbs，实现之后传递给皮肤，定制你需要显示的按键
+> drawerBtn => 播放列表  nextBtn => 下一个按钮  speedBtn => 速度按钮  lockBtn => 锁按钮 
+> topBar => 是否显示顶部UI  autoNext => 播放完成后是否自动播放下一集（如果下一集存在）
+
 
 ## 基本示例
 
@@ -77,6 +84,16 @@ import 'package:flutter/material.dart';
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:fijkplayer_skin/fijkplayer_skin.dart';
 import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
+
+// 这里实现一个皮肤显示配置项
+class PlayerShowConfig implements ShowConfigAbs {
+  bool drawerBtn = true;  
+  bool nextBtn = true;
+  bool speedBtn = true;
+  bool topBar = true;
+  bool lockBtn = true;
+  bool autoNext = true;
+}
 
 class VideoScreen extends StatefulWidget {
   VideoScreen();
@@ -92,6 +109,8 @@ class _VideoScreenState extends State<VideoScreen> {
   int _curTabIdx = 0;
   // 当前选中的tablist index，默认0
   int _curActiveIdx = 0;
+  // ignore: non_constant_identifier_names
+  ShowConfigAbs v_cfg = PlayerShowConfig();
   // 视频源列表，请参考当前videoList完整例子
   Map<String, List<Map<String, dynamic>>> videoList = {
     "video": [
@@ -180,8 +199,6 @@ class _VideoScreenState extends State<VideoScreen> {
                 pageContent: context,
                 viewSize: viewSize,
                 texturePos: texturePos,
-                // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
-                showTopCon: true,
                 // 标题 当前页面顶部的标题部分，可以不传，默认空字符串
                 playerTitle: "标题",
                 // 当前视频改变钩子
@@ -192,8 +209,10 @@ class _VideoScreenState extends State<VideoScreen> {
                 curTabIdx: _curTabIdx,
                 // 当前视频源activeIndex
                 curActiveIdx: _curActiveIdx,
-                // 是否填充导航栏
+                // 是否填充状态栏
                 isFillingNav: true,
+                // 显示的配置
+                showConfig: v_cfg,
               );
             },
           );
@@ -296,6 +315,16 @@ class Home2State extends State<Home2> {
   }
 }
 
+// 定制UI配置项
+class PlayerShowConfig implements ShowConfigAbs {
+  bool drawerBtn = true;  
+  bool nextBtn = true;
+  bool speedBtn = true;
+  bool topBar = true;
+  bool lockBtn = true;
+  bool autoNext = true;
+}
+
 class VideoDetailPage extends StatefulWidget {
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
@@ -348,6 +377,9 @@ class _VideoDetailPageState extends State<VideoDetailPage>
 
   int _curTabIdx = 0;
   int _curActiveIdx = 0;
+
+  // ignore: non_constant_identifier_names
+  ShowConfigAbs v_cfg = PlayerShowConfig();
 
   @override
   void dispose() {
@@ -489,8 +521,6 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               viewSize: viewSize,
               texturePos: texturePos,
               pageContent: context,
-              // 是否显示顶部，如果要显示顶部标题栏 + 返回键，那么就传递 true
-              showTopCon: true,
               // 标题 当前页面顶部的标题部分
               playerTitle: "标题",
               // 当前视频改变钩子
@@ -501,8 +531,10 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               curTabIdx: _curTabIdx,
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
-              // 是否填充导航栏
+              // 是否填充状态栏
               isFillingNav: true,
+              // 显示的配置
+              showConfig: v_cfg,
             );
           },
         ),
