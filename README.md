@@ -69,11 +69,22 @@ onChangeVideo（int curTabIdx, int curActiveIdx） 钩子函数，在播放器�
 
 pageContent 传递的就是当前组件的 context，这里注意，你当前的根组件不要使用 MaterialApp 否则会报错，请使用 Scaffold
 
-isFillingNav 是否填充状态栏，（默认false），如果开启，皮肤会计算状态栏高度，在播放器顶部多预览状态栏的高度
+showConfig 传递一个接口实例，抽象类 ShowConfigAbs，实现之后传递给皮肤，定制你需要显示的按键（参数如下）
 
-showConfig 传递一个接口实例，抽象类 ShowConfigAbs，实现之后传递给皮肤，定制你需要显示的按键
-> drawerBtn => 播放列表  nextBtn => 下一个按钮  speedBtn => 速度按钮  lockBtn => 锁按钮 
-> topBar => 是否显示顶部UI  autoNext => 播放完成后是否自动播放下一集（如果下一集存在）
+```code
+  bool drawerBtn    // 是否显示剧集按钮
+  bool nextBtn      // 是否显示下一集按钮
+  bool speedBtn     // 是否显示速度按钮
+  bool topBar       // 是否显示播放器状态栏（顶部），非系统
+  bool lockBtn      // 是否显示锁按钮
+  bool autoNext     // 播放完成后是否自动播放下一集，false 播放完成即暂停
+  bool bottomPro    // 底部吸底进度条，贴底部，类似开眼视频
+  bool stateAuto    // 是否自适应系统状态栏，true 会计算系统状态栏，从而加大 topBar 的高度，避免挡住播放器状态栏
+```
+
+videoFormat json 格式化后的视频数据，使用 VideoSourceFormat 格式化json数据
+
+tabController tabController 实例，用于皮肤内部使用 tabBar，传入为了省内存开销
 
 
 ## 基本示例
@@ -87,12 +98,14 @@ import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
 
 // 这里实现一个皮肤显示配置项
 class PlayerShowConfig implements ShowConfigAbs {
-  bool drawerBtn = true;  
+  bool drawerBtn = true;
   bool nextBtn = true;
   bool speedBtn = true;
   bool topBar = true;
   bool lockBtn = true;
   bool autoNext = true;
+  bool bottomPro = true;
+  bool stateAuto = true;
 }
 
 class VideoScreen extends StatefulWidget {
@@ -209,10 +222,12 @@ class _VideoScreenState extends State<VideoScreen> {
                 curTabIdx: _curTabIdx,
                 // 当前视频源activeIndex
                 curActiveIdx: _curActiveIdx,
-                // 是否填充状态栏
-                isFillingNav: true,
                 // 显示的配置
                 showConfig: v_cfg,
+                // json格式化后的视频数据
+                videoFormat: _videoSourceTabs,
+                // tabController
+                tabController: _tabController,
               );
             },
           );
@@ -317,12 +332,14 @@ class Home2State extends State<Home2> {
 
 // 定制UI配置项
 class PlayerShowConfig implements ShowConfigAbs {
-  bool drawerBtn = true;  
+  bool drawerBtn = true;
   bool nextBtn = true;
   bool speedBtn = true;
   bool topBar = true;
   bool lockBtn = true;
   bool autoNext = true;
+  bool bottomPro = true;
+  bool stateAuto = true;
 }
 
 class VideoDetailPage extends StatefulWidget {
@@ -531,10 +548,12 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               curTabIdx: _curTabIdx,
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
-              // 是否填充状态栏
-              isFillingNav: true,
               // 显示的配置
               showConfig: v_cfg,
+              // json格式化后的视频数据
+              videoFormat: _videoSourceTabs,
+              // tabController
+              tabController: _tabController,
             );
           },
         ),
