@@ -76,7 +76,7 @@ class CustomFijkPanel extends StatefulWidget {
 }
 
 class _CustomFijkPanelState extends State<CustomFijkPanel>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   FijkPlayer get player => widget.player;
   ShowConfigAbs get showConfig => widget.showConfig;
   VideoSourceFormat get _videoSourceTabs => widget.videoFormat!;
@@ -99,7 +99,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   void initEvent() {
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 240),
+      duration: const Duration(milliseconds: 280),
       vsync: this,
     );
     // init animation
@@ -148,7 +148,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         _drawerState = state;
       });
     }
-    Future.delayed(Duration(milliseconds: 10), () {
+    Future.delayed(Duration(milliseconds: 100), () {
       _animationController!.forward();
     });
   }
@@ -165,7 +165,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   }
 
   // 切换播放源
-  void changeCurPlayVideo(int tabIdx, int activeIdx) async {
+  Future<void> changeCurPlayVideo(int tabIdx, int activeIdx) async {
     await player.stop();
     player.reset().then((_) {
       String curTabActiveUrl =
@@ -379,23 +379,27 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   // build 剧集
   Widget _buildPlayDrawer() {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black87,
-        automaticallyImplyLeading: false,
-        elevation: 0.1,
-        title: TabBar(
-          tabs:
-              _videoSourceTabs.video!.map((e) => Tab(text: e!.name!)).toList(),
-          isScrollable: true,
-          controller: _tabController,
+    return DefaultTabController(
+      length: _videoSourceTabs.video!.length,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black87,
+          automaticallyImplyLeading: false,
+          elevation: 0.1,
+          title: TabBar(
+            tabs: _videoSourceTabs.video!
+                .map((e) => Tab(text: e!.name!))
+                .toList(),
+            isScrollable: true,
+            controller: _tabController,
+          ),
         ),
-      ),
-      body: Container(
-        color: Colors.black87,
-        child: TabBarView(
-          controller: _tabController,
-          children: _createTabConList(),
+        body: Container(
+          child: TabBarView(
+            controller: _tabController,
+            children: _createTabConList(),
+          ),
+          color: Colors.black,
         ),
       ),
     );
@@ -456,6 +460,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   }
 
   @override
+  // ignore: must_call_super
   Widget build(BuildContext context) {
     Rect rect = player.value.fullScreen
         ? Rect.fromLTWH(
@@ -478,7 +483,9 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         _buildErrorWidget(),
       );
     } else {
-      if (_lockStuff == true && showConfig.lockBtn) {
+      if (_lockStuff == true &&
+          showConfig.lockBtn &&
+          widget.player.value.fullScreen) {
         ws.add(
           _buidLockStateDetctor(),
         );
@@ -520,6 +527,9 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 // ignore: camel_case_types
@@ -844,7 +854,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
 // +++++++++++++++++++++++++++++++++++++++++++
 
   // 切换播放源
-  void changeCurPlayVideo(int tabIdx, int activeIdx) async {
+  Future<void> changeCurPlayVideo(int tabIdx, int activeIdx) async {
     await player.stop();
     setState(() {
       _buffering = false;
@@ -1431,7 +1441,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
                         : Container(),
                   ),
                   // 锁按钮
-                  showConfig.lockBtn
+                  showConfig.lockBtn && widget.player.value.fullScreen
                       ? Align(
                           alignment: Alignment.centerLeft,
                           child: AnimatedOpacity(

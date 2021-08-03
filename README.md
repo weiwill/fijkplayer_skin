@@ -164,9 +164,20 @@ class _VideoScreenState extends State<VideoScreen> {
     ]
   };
 
+  VideoSourceFormat? _videoSourceTabs;
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    // 格式化json转对象
+    _videoSourceTabs = VideoSourceFormat.fromJson(videoList);
+    // tabbar初始化
+    _tabController = TabController(
+      initialIndex: 0,
+      length: _videoSourceTabs!.video!.length,
+      vsync: this,
+    );
     // 这句不能省，必须有
     speed = 1.0;
   }
@@ -174,6 +185,7 @@ class _VideoScreenState extends State<VideoScreen> {
   @override
   void dispose() {
     player.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -216,8 +228,6 @@ class _VideoScreenState extends State<VideoScreen> {
                 playerTitle: "标题",
                 // 当前视频改变钩子
                 onChangeVideo: onChangeVideo,
-                // 视频源列表
-                videoList: videoList,
                 // 当前视频源tabIndex
                 curTabIdx: _curTabIdx,
                 // 当前视频源activeIndex
@@ -542,8 +552,6 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               playerTitle: "标题",
               // 当前视频改变钩子
               onChangeVideo: onChangeVideo,
-              // 视频源
-              videoList: videoList,
               // 当前视频源tabIndex
               curTabIdx: _curTabIdx,
               // 当前视频源activeIndex
@@ -557,10 +565,12 @@ class _VideoDetailPageState extends State<VideoDetailPage>
             );
           },
         ),
-        Container(
-          height: 300,
-          child: buildPlayDrawer(),
-        ),
+        // 请不要使用同一个tabbar，否则会卡顿，原因是数据更新导致整体重新绘制，
+        // 可以使用_curTabIdx和_curActiveIdx手动渲染其他类似组件，判断
+        // Container(
+        //   height: 300,
+        //   child: buildPlayDrawer(),
+        // ),
         Container(
           child: Text(
               '当前tabIdx : ${_curTabIdx.toString()} 当前activeIdx : ${_curActiveIdx.toString()}'),
