@@ -47,16 +47,16 @@ class _VideoDetailPageState extends State<VideoDetailPage>
         "name": "天空资源",
         "list": [
           {
-            "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
-            "name": "综艺"
+            "url": "https://v10.dious.cc/20211009/nONG14sk/index.m3u8",
+            "name": "一级指控"
           },
           {
-            "url": "https://static.smartisanos.cn/common/video/t1-ui.mp4",
-            "name": "锤子1"
+            "url": "https://v7.dious.cc/20211010/qNFrQSTP/index.m3u8",
+            "name": "白蛇传·情"
           },
           {
-            "url": "https://static.smartisanos.cn/common/video/video-jgpro.mp4",
-            "name": "锤子2"
+            "url": "https://v10.dious.cc/20211001/UBv22vhz/index.m3u8",
+            "name": "情书"
           }
         ]
       },

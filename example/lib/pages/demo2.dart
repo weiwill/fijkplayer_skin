@@ -47,8 +47,8 @@ class _VideoDetailPageState extends State<VideoDetailPage>
         "name": "天空资源",
         "list": [
           {
-            "url": "https://n1.szjal.cn/20210428/lsNZ6QAL/index.m3u8",
-            "name": "综艺"
+            "url": "https://v10.dious.cc/20211009/nONG14sk/index.m3u8",
+            "name": "一级指控"
           },
         ]
       },
