@@ -85,6 +85,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   Timer? _hideLockTimer;
 
   FijkState? _playerState;
+  bool _isPlaying = false;
 
   StreamSubscription? _currentPosSubs;
 
@@ -112,6 +113,11 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
     setState(() {
       _playerState = player.value.state;
     });
+    if (player.value.duration.inMilliseconds > 0 && !_isPlaying) {
+      setState(() {
+        _isPlaying = true;
+      });
+    }
     player.addListener(_playerValueChanged);
     Wakelock.enable();
   }
@@ -134,7 +140,12 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   }
 
   // 获得播放器状态
-  _playerValueChanged() {
+  void _playerValueChanged() {
+    if (player.value.duration.inMilliseconds > 0 && !_isPlaying) {
+      setState(() {
+        _isPlaying = true;
+      });
+    }
     setState(() {
       _playerState = player.value.state;
     });
@@ -454,6 +465,73 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
     return list;
   }
 
+  // 获取到媒体信息前的状态
+  Widget _buildLoadingWidget() {
+    return Container(
+      child: Stack(
+        children: [
+          showConfig.topBar
+              ? Positioned(
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    height:
+                        showConfig.stateAuto && !widget.player.value.fullScreen
+                            ? barFillingHeight
+                            : barHeight,
+                    alignment: Alignment.bottomLeft,
+                    child: Container(
+                      height: barHeight,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          _buildTopBackBtn(),
+                          Expanded(
+                            child: Container(
+                              child: Text(
+                                widget.playerTitle,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              : Container(),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.only(
+                    top: showConfig.stateAuto && !widget.player.value.fullScreen
+                        ? barGap
+                        : 0),
+                child: SizedBox(
+                  width: barHeight * 0.8,
+                  height: barHeight * 0.8,
+                  child: const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
@@ -473,9 +551,13 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
     List<Widget> ws = [];
 
-    if (_playerState == FijkState.error) {
+    if (_playerState == FijkState.error && !_isPlaying) {
       ws.add(
         _buildErrorWidget(),
+      );
+    } else if (_playerState == FijkState.asyncPreparing && !_isPlaying) {
+      ws.add(
+        _buildLoadingWidget(),
       );
     } else {
       if (_lockStuff == true &&
