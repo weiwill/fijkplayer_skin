@@ -50,12 +50,11 @@ class CustomFijkPanel extends StatefulWidget {
   final Rect texturePos;
   final BuildContext? pageContent;
   final String playerTitle;
-  final Function onChangeVideo;
+  final Function? onChangeVideo;
   final int curTabIdx;
   final int curActiveIdx;
   final ShowConfigAbs showConfig;
   final VideoSourceFormat? videoFormat;
-  final TabController tabController;
 
   CustomFijkPanel({
     required this.player,
@@ -64,9 +63,8 @@ class CustomFijkPanel extends StatefulWidget {
     this.pageContent,
     this.playerTitle = "",
     required this.showConfig,
-    required this.onChangeVideo,
+    this.onChangeVideo,
     required this.videoFormat,
-    required this.tabController,
     required this.curTabIdx,
     required this.curActiveIdx,
   });
@@ -80,10 +78,6 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   FijkPlayer get player => widget.player;
   ShowConfigAbs get showConfig => widget.showConfig;
   VideoSourceFormat get _videoSourceTabs => widget.videoFormat!;
-  TabController get _tabController => widget.tabController;
-
-  // VideoSourceFormat? _videoSourceTabs;
-  // late TabController _tabController;
 
   bool _lockStuff = lockStuff;
   bool _hideLockStuff = hideLockStuff;
@@ -96,8 +90,13 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   AnimationController? _animationController;
   Animation<Offset>? _animation;
+  late TabController _tabController;
 
   void initEvent() {
+    _tabController = TabController(
+      length: _videoSourceTabs.video!.length,
+      vsync: this,
+    );
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 280),
       vsync: this,
@@ -127,8 +126,8 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   void dispose() {
     _currentPosSubs?.cancel();
     _hideLockTimer?.cancel();
-    // _tabController.dispose();
     player.removeListener(_playerValueChanged);
+    _tabController.dispose();
     _animationController!.dispose();
     Wakelock.disable();
     super.dispose();
@@ -175,7 +174,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         autoPlay: true,
       );
       // 回调
-      widget.onChangeVideo(tabIdx, activeIdx);
+      widget.onChangeVideo!(tabIdx, activeIdx);
     });
   }
 
@@ -379,28 +378,24 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
 
   // build 剧集
   Widget _buildPlayDrawer() {
-    return DefaultTabController(
-      length: _videoSourceTabs.video!.length,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.black87,
-          automaticallyImplyLeading: false,
-          elevation: 0.1,
-          title: TabBar(
-            tabs: _videoSourceTabs.video!
-                .map((e) => Tab(text: e!.name!))
-                .toList(),
-            isScrollable: true,
-            controller: _tabController,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black87,
+        automaticallyImplyLeading: false,
+        elevation: 0.1,
+        title: TabBar(
+          tabs:
+              _videoSourceTabs.video!.map((e) => Tab(text: e!.name!)).toList(),
+          isScrollable: true,
+          controller: _tabController,
         ),
-        body: Container(
-          child: TabBarView(
-            controller: _tabController,
-            children: _createTabConList(),
-          ),
-          color: Colors.black,
+      ),
+      body: Container(
+        child: TabBarView(
+          controller: _tabController,
+          children: _createTabConList(),
         ),
+        color: Colors.black,
       ),
     );
   }
@@ -506,7 +501,6 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
             playerTitle: widget.playerTitle,
             viewSize: widget.viewSize,
             videoFormat: widget.videoFormat,
-            tabController: widget.tabController,
             changeDrawerState: changeDrawerState,
             changeLockState: changeLockState,
           ),
@@ -539,14 +533,13 @@ class _buildGestureDetector extends StatefulWidget {
   final Rect texturePos;
   final BuildContext? pageContent;
   final String playerTitle;
-  final Function onChangeVideo;
+  final Function? onChangeVideo;
   final int curTabIdx;
   final int curActiveIdx;
   final Function changeDrawerState;
   final Function changeLockState;
   final ShowConfigAbs showConfig;
   final VideoSourceFormat? videoFormat;
-  final TabController tabController;
   // 每次重绘的时候，设置显示
   final _hideStuff = false;
   _buildGestureDetector({
@@ -557,11 +550,10 @@ class _buildGestureDetector extends StatefulWidget {
     this.pageContent,
     this.playerTitle = "",
     required this.showConfig,
-    required this.onChangeVideo,
+    this.onChangeVideo,
     required this.curTabIdx,
     required this.curActiveIdx,
     required this.videoFormat,
-    required this.tabController,
     required this.changeDrawerState,
     required this.changeLockState,
   }) : super(key: key);
@@ -723,7 +715,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     if (playend && nextVideoUrl != null && showConfig.autoNext) {
       int newTabIdx = widget.curTabIdx;
       int newActiveIdx = widget.curActiveIdx + 1;
-      widget.onChangeVideo(newTabIdx, newActiveIdx);
+      widget.onChangeVideo!(newTabIdx, newActiveIdx);
       // 切换播放源
       changeCurPlayVideo(newTabIdx, newActiveIdx);
     }
@@ -734,7 +726,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   _onHorizontalDragStart(detills) {
     setState(() {
       updatePrevDx = detills.globalPosition.dx;
-      updatePosX = _currentPos.inSeconds;
+      updatePosX = _currentPos.inMilliseconds;
     });
   }
 
@@ -747,11 +739,21 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     // + -, 不满足, 左右滑动合法滑动值，> 4
     if (isBefore && cdx - pdx < 2 || !isBefore && pdx - cdx < 2) return null;
 
-    int dragRange = isBefore ? updatePosX! + 1 : updatePosX! - 1;
+    // 计算手指滑动的比例
+    int newInterval = pdx - cdx;
+    double playerW = window.physicalSize.width;
+    int curIntervalAbs = newInterval.abs();
+    double movePropCheck = (curIntervalAbs / playerW) * 100;
+
+    // 计算进度条的比例
+    double durProgCheck = _duration.inMilliseconds.toDouble() / 100;
+    int checkTransfrom = (movePropCheck * durProgCheck).toInt();
+    int dragRange =
+        isBefore ? updatePosX! + checkTransfrom : updatePosX! - checkTransfrom;
 
     // 是否溢出 最大
-    int lastSecond = _duration.inSeconds;
-    if (dragRange >= _duration.inSeconds) {
+    int lastSecond = _duration.inMilliseconds;
+    if (dragRange >= _duration.inMilliseconds) {
       dragRange = lastSecond;
     }
     // 是否溢出 最小
@@ -767,7 +769,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       updatePrevDx = curDragDx;
       // 更新时间
       updatePosX = dragRange.toInt();
-      _dargPos = Duration(seconds: updatePosX!.toInt());
+      _dargPos = Duration(milliseconds: updatePosX!.toInt());
     });
   }
 
@@ -868,7 +870,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
         autoPlay: true,
       );
       // 回调
-      widget.onChangeVideo(tabIdx, activeIdx);
+      widget.onChangeVideo!(tabIdx, activeIdx);
     });
   }
 
