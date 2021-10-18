@@ -24,6 +24,7 @@ sdk >= 2.12.0 支持空安全
 * [Dart-Cms-Manage](https://github.com/abcd498936590/Dart-Cms-Manage)   =>> Dart-Cms后台管理系统页面部分
 * [Dart-Cms-Flutter](https://github.com/abcd498936590/Dart-Cms-Flutter)  =>> Dart-Cms的安卓客户端，使用flutter开发
 * [Dart-Cms-Script](https://github.com/abcd498936590/Dart-Cms-Script)  =>> Dart-Cms插件教程，插件使用，插件开发
+* [flutter_eyepetizer](https://github.com/abcd498936590/flutter_eyepetizer)  =>> Flutter + GetX仿开眼视频app
 
 
 ## 使用说明
