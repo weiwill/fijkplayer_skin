@@ -803,8 +803,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     }
   }
 
-// +++++++++++++++++++++++++++++++++++++++++++
-
   _onHorizontalDragStart(detills) {
     setState(() {
       updatePrevDx = detills.globalPosition.dx;
@@ -821,7 +819,7 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
 
     // 计算手指滑动的比例
     int newInterval = pdx - cdx;
-    double playerW = window.physicalSize.width;
+    double playerW = MediaQuery.of(context).size.width;
     int curIntervalAbs = newInterval.abs();
     double movePropCheck = (curIntervalAbs / playerW) * 100;
 
@@ -862,8 +860,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       _currentPos = _dargPos;
     });
   }
-
-// +++++++++++++++++++++++++++++++++++++++++++
 
   _onVerticalDragStart(detills) async {
     double clientW = widget.viewSize.width;
@@ -932,8 +928,6 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
       varTouchInitSuc = false;
     });
   }
-
-// +++++++++++++++++++++++++++++++++++++++++++
 
   // 切换播放源
   Future<void> changeCurPlayVideo(int tabIdx, int activeIdx) async {
