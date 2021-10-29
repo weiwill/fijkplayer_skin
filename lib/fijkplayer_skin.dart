@@ -317,11 +317,26 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
   // build 剧集
   Widget _buildPlayDrawer() {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(0, 0, 0, 0.4),
       appBar: AppBar(
-        backgroundColor: Colors.black87,
+        backgroundColor: Color.fromRGBO(0, 0, 0, 0.5),
         automaticallyImplyLeading: false,
         elevation: 0.1,
         title: TabBar(
+          labelColor: Colors.white,
+          labelStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+          ),
+          unselectedLabelColor: Colors.white,
+          unselectedLabelStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+          ),
+          indicator: BoxDecoration(
+            color: Colors.purple[700],
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
           tabs:
               _videoSourceTabs.video!.map((e) => Tab(text: e!.name!)).toList(),
           isScrollable: true,
@@ -329,11 +344,11 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
         ),
       ),
       body: Container(
+        color: Color.fromRGBO(0, 0, 0, 0.5),
         child: TabBarView(
           controller: _tabController,
           children: _createTabConList(),
         ),
-        color: Colors.black,
       ),
     );
   }
@@ -347,12 +362,12 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
           .keys
           .map((int activeIdx) {
         return Padding(
-          padding: EdgeInsets.all(5),
+          padding: EdgeInsets.only(left: 5, right: 5),
           child: ElevatedButton(
             style: ButtonStyle(
               shape: MaterialStateProperty.all(
                 RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               elevation: MaterialStateProperty.all(0),
@@ -992,14 +1007,16 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
   // 底部控制栏 - 播放按钮
   Widget _buildPlayStateBtn(IconData iconData, Function cb) {
     return Ink(
-      padding: EdgeInsets.all(5),
       child: InkWell(
         onTap: () => cb(),
         child: Container(
           height: 30,
-          child: Icon(
-            iconData,
-            color: Colors.white,
+          child: Padding(
+            padding: EdgeInsets.only(left: 5, right: 5),
+            child: Icon(
+              iconData,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

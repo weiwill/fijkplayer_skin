@@ -67,7 +67,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
           {
             "url": "https://v-cdn.zjol.com.cn/280443.mp4",
             "name": "其他",
-          }
+          },
         ]
       },
       {
@@ -165,7 +165,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
           .keys
           .map((int activeIdx) {
         return Padding(
-          padding: EdgeInsets.all(5),
+          padding: EdgeInsets.only(left: 5, right: 5),
           child: ElevatedButton(
             style: ButtonStyle(
               shape: MaterialStateProperty.all(

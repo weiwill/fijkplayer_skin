@@ -175,7 +175,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
           .keys
           .map((int activeIdx) {
         return Padding(
-          padding: EdgeInsets.all(5),
+          padding: EdgeInsets.only(left: 5, right: 5),
           child: ElevatedButton(
             style: ButtonStyle(
               shape: MaterialStateProperty.all(
