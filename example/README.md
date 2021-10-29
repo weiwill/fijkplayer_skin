@@ -33,14 +33,24 @@ class Demo1State extends State<Demo1> {
 
 // 定制UI配置项
 class PlayerShowConfig implements ShowConfigAbs {
+  @override
   bool drawerBtn = true;
+  @override
   bool nextBtn = true;
+  @override
   bool speedBtn = true;
+  @override
   bool topBar = true;
+  @override
   bool lockBtn = true;
+  @override
   bool autoNext = true;
+  @override
   bool bottomPro = true;
+  @override
   bool stateAuto = true;
+  @override
+  bool isAutoPlay = false;
 }
 
 class VideoDetailPage extends StatefulWidget {
@@ -96,8 +106,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   int _curTabIdx = 0;
   int _curActiveIdx = 0;
 
-  // ignore: non_constant_identifier_names
-  ShowConfigAbs v_cfg = PlayerShowConfig();
+  ShowConfigAbs vCfg = PlayerShowConfig();
 
   @override
   void dispose() {
@@ -188,9 +197,13 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               String nextVideoUrl =
                   _videoSourceTabs!.video![tabIdx]!.list![activeIdx]!.url!;
               // 切换播放源
-              await player.stop();
-              await player.reset();
-              player.setDataSource(nextVideoUrl, autoPlay: true);
+              // 如果不是自动开始播放，那么先执行stop
+              if (player.value.state == FijkState.completed) {
+                await player.stop();
+              }
+              await player.reset().then((_) async {
+                player.setDataSource(nextVideoUrl, autoPlay: true);
+              });
             },
             child: Text(
               _videoSourceTabs!.video![tabIdx]!.list![activeIdx]!.name!,
@@ -248,7 +261,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
               // 显示的配置
-              showConfig: v_cfg,
+              showConfig: vCfg,
               // json格式化后的视频数据
               videoFormat: _videoSourceTabs,
             );
@@ -302,14 +315,24 @@ class Demo2State extends State<Demo2> {
 
 // 定制UI配置项
 class PlayerShowConfig implements ShowConfigAbs {
+  @override
   bool drawerBtn = false;
+  @override
   bool nextBtn = false;
+  @override
   bool speedBtn = true;
+  @override
   bool topBar = true;
+  @override
   bool lockBtn = true;
+  @override
   bool autoNext = false;
+  @override
   bool bottomPro = true;
+  @override
   bool stateAuto = true;
+  @override
+  bool isAutoPlay = true;
 }
 
 class VideoDetailPage extends StatefulWidget {
@@ -339,8 +362,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   int _curTabIdx = 0;
   int _curActiveIdx = 0;
 
-  // ignore: non_constant_identifier_names
-  ShowConfigAbs v_cfg = PlayerShowConfig();
+  ShowConfigAbs vCfg = PlayerShowConfig();
 
   @override
   void dispose() {
@@ -387,7 +409,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
               // 显示的配置
-              showConfig: v_cfg,
+              showConfig: vCfg,
               // json格式化后的视频数据
               videoFormat: _videoSourceTabs,
             );

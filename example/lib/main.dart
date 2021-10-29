@@ -1,3 +1,4 @@
+// ignore_for_file: must_be_immutable
 import 'package:flutter/material.dart';
 import 'package:example/pages/demo1.dart' show Demo1;
 import 'package:example/pages/demo2.dart' show Demo2;

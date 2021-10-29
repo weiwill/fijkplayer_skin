@@ -81,6 +81,7 @@ showConfig 传递一个接口实例，抽象类 ShowConfigAbs，实现之后传�
   bool autoNext     // 播放完成后是否自动播放下一集，false 播放完成即暂停
   bool bottomPro    // 底部吸底进度条，贴底部，类似开眼视频
   bool stateAuto    // 是否自适应系统状态栏，true 会计算系统状态栏，从而加大 topBar 的高度，避免挡住播放器状态栏
+  bool isAutoPlay   // 是否自动开始播放
 ```
 
 videoFormat json 格式化后的视频数据，使用 VideoSourceFormat 格式化json数据
@@ -99,14 +100,24 @@ import 'package:fijkplayer_skin/schema.dart' show VideoSourceFormat;
 
 // 这里实现一个皮肤显示配置项
 class PlayerShowConfig implements ShowConfigAbs {
+  @override
   bool drawerBtn = true;
+  @override
   bool nextBtn = true;
+  @override
   bool speedBtn = true;
+  @override
   bool topBar = true;
+  @override
   bool lockBtn = true;
+  @override
   bool autoNext = true;
+  @override
   bool bottomPro = true;
+  @override
   bool stateAuto = true;
+  @override
+  bool isAutoPlay = true;
 }
 
 class VideoScreen extends StatefulWidget {
@@ -123,8 +134,7 @@ class _VideoScreenState extends State<VideoScreen> {
   int _curTabIdx = 0;
   // 当前选中的tablist index，默认0
   int _curActiveIdx = 0;
-  // ignore: non_constant_identifier_names
-  ShowConfigAbs v_cfg = PlayerShowConfig();
+  ShowConfigAbs vCfg = PlayerShowConfig();
   // 视频源列表，请参考当前videoList完整例子
   Map<String, List<Map<String, dynamic>>> videoList = {
     "video": [
@@ -226,7 +236,7 @@ class _VideoScreenState extends State<VideoScreen> {
                 // 当前视频源activeIndex
                 curActiveIdx: _curActiveIdx,
                 // 显示的配置
-                showConfig: v_cfg,
+                showConfig: vCfg,
                 // json格式化后的视频数据
                 videoFormat: _videoSourceTabs,
               );

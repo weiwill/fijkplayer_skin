@@ -23,14 +23,24 @@ class Demo2State extends State<Demo2> {
 
 // 定制UI配置项
 class PlayerShowConfig implements ShowConfigAbs {
+  @override
   bool drawerBtn = false;
+  @override
   bool nextBtn = false;
+  @override
   bool speedBtn = true;
+  @override
   bool topBar = true;
+  @override
   bool lockBtn = true;
+  @override
   bool autoNext = false;
+  @override
   bool bottomPro = true;
+  @override
   bool stateAuto = true;
+  @override
+  bool isAutoPlay = true;
 }
 
 class VideoDetailPage extends StatefulWidget {
@@ -48,7 +58,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
         "list": [
           {
             "url": "https://v10.dious.cc/20211009/nONG14sk/index.m3u8",
-            "name": "一级指控"
+            "name": "一级指控",
           },
         ]
       },
@@ -60,8 +70,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   int _curTabIdx = 0;
   int _curActiveIdx = 0;
 
-  // ignore: non_constant_identifier_names
-  ShowConfigAbs v_cfg = PlayerShowConfig();
+  ShowConfigAbs vCfg = PlayerShowConfig();
 
   @override
   void dispose() {
@@ -108,7 +117,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               // 当前视频源activeIndex
               curActiveIdx: _curActiveIdx,
               // 显示的配置
-              showConfig: v_cfg,
+              showConfig: vCfg,
               // json格式化后的视频数据
               videoFormat: _videoSourceTabs,
             );
