@@ -55,6 +55,7 @@ class CustomFijkPanel extends StatefulWidget {
   final BuildContext? pageContent;
   final String playerTitle;
   final Function? onChangeVideo;
+  final bool? horizontalDrag;
   final int curTabIdx;
   final int curActiveIdx;
   final ShowConfigAbs showConfig;
@@ -68,6 +69,7 @@ class CustomFijkPanel extends StatefulWidget {
     this.playerTitle = "",
     required this.showConfig,
     this.onChangeVideo,
+    this.horizontalDrag,
     required this.videoFormat,
     required this.curTabIdx,
     required this.curActiveIdx,
@@ -608,6 +610,7 @@ class _CustomFijkPanelState extends State<CustomFijkPanel>
             curActiveIdx: widget.curActiveIdx,
             curTabIdx: widget.curTabIdx,
             onChangeVideo: widget.onChangeVideo,
+            horizontalDrag: widget.horizontalDrag,
             player: widget.player,
             texturePos: widget.texturePos,
             showConfig: widget.showConfig,
@@ -647,6 +650,7 @@ class _buildGestureDetector extends StatefulWidget {
   final BuildContext? pageContent;
   final String playerTitle;
   final Function? onChangeVideo;
+  final bool? horizontalDrag;
   final int curTabIdx;
   final int curActiveIdx;
   final Function changeDrawerState;
@@ -662,6 +666,7 @@ class _buildGestureDetector extends StatefulWidget {
     this.playerTitle = "",
     required this.showConfig,
     this.onChangeVideo,
+    this.horizontalDrag = true,
     required this.curTabIdx,
     required this.curActiveIdx,
     required this.videoFormat,
@@ -1474,9 +1479,9 @@ class _buildGestureDetectorState extends State<_buildGestureDetector> {
     return GestureDetector(
       onTap: _cancelAndRestartTimer,
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragStart: _onHorizontalDragStart,
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
+      onHorizontalDragStart: widget.horizontalDrag ? _onHorizontalDragStart : null,
+      onHorizontalDragUpdate: widget.horizontalDrag ? _onHorizontalDragUpdate : null,
+      onHorizontalDragEnd: widget.horizontalDrag ? _onHorizontalDragEnd : null,
       onVerticalDragStart: _onVerticalDragStart,
       onVerticalDragUpdate: _onVerticalDragUpdate,
       onVerticalDragEnd: _onVerticalDragEnd,
