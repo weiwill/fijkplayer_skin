@@ -650,7 +650,7 @@ class _buildGestureDetector extends StatefulWidget {
   final BuildContext? pageContent;
   final String playerTitle;
   final Function? onChangeVideo;
-  final bool? horizontalDrag;
+  final bool horizontalDrag;
   final int curTabIdx;
   final int curActiveIdx;
   final Function changeDrawerState;
