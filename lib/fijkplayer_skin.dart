@@ -55,7 +55,7 @@ class CustomFijkPanel extends StatefulWidget {
   final BuildContext? pageContent;
   final String playerTitle;
   final Function? onChangeVideo;
-  final bool? horizontalDrag;
+  final bool horizontalDrag;
   final int curTabIdx;
   final int curActiveIdx;
   final ShowConfigAbs showConfig;
@@ -69,7 +69,7 @@ class CustomFijkPanel extends StatefulWidget {
     this.playerTitle = "",
     required this.showConfig,
     this.onChangeVideo,
-    this.horizontalDrag,
+    this.horizontalDrag = true,
     required this.videoFormat,
     required this.curTabIdx,
     required this.curActiveIdx,
